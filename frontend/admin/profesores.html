@@ -1,0 +1,916 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestión de Profesores - Sistema de Horarios</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #4361ee;           /* Azul eléctrico */
+            --primary-dark: #3a0ca3;      /* Azul oscuro */
+            --secondary: #7209b7;         /* Púrpura */
+            --accent: #00ffff;            /* Cian brillante */
+            --success: #4cc9f0;          /* Azul claro */
+            --warning: #f8961e;          /* Naranja */
+            --danger: #f72585;           /* Rosa fuerte */
+            --dark: #1a1a2e;             /* Fondo oscuro */
+            --darker: #0a0e17;           /* Fondo más oscuro */
+            --light: #f8f9fa;            /* Blanco suave */
+            --gray: #8892b0;             /* Texto gris */
+            --card-bg: rgba(255, 255, 255, 0.05); /* Fondo de tarjetas */
+        }
+        
+        body {
+            background: linear-gradient(135deg, var(--darker) 0%, var(--dark) 100%);
+            color: white;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            min-height: 100vh;
+        }
+        
+        /* Navbar mejorada */
+        .navbar-custom {
+            background: rgba(26, 26, 46, 0.95) !important;
+            -webkit-backdrop-filter: blur(10px);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid rgba(67, 97, 238, 0.3);
+            padding: 15px 0;
+        }
+        
+        .navbar-brand {
+            color: var(--accent) !important;
+            font-weight: 600;
+            font-size: 1.5rem;
+        }
+        
+        .navbar-brand i {
+            color: var(--primary);
+            margin-right: 10px;
+        }
+        
+        .nav-link {
+            color: var(--gray) !important;
+            font-weight: 500;
+            padding: 8px 20px !important;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+            margin: 0 5px;
+        }
+        
+        .nav-link:hover {
+            color: white !important;
+            background: rgba(67, 97, 238, 0.1);
+        }
+        
+        .nav-link.active {
+            color: var(--accent) !important;
+            background: rgba(67, 97, 238, 0.2);
+            border-bottom: 2px solid var(--accent);
+        }
+        
+        /* Contenedor principal */
+        .container-fluid {
+            padding: 30px;
+        }
+        
+        /* Título */
+        h1 {
+            color: white;
+            font-weight: 600;
+            margin-bottom: 30px;
+            font-size: 2.2rem;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        
+        h1 i {
+            color: var(--accent);
+            background: rgba(0, 255, 255, 0.1);
+            padding: 15px;
+            border-radius: 15px;
+            font-size: 1.8rem;
+        }
+        
+        /* Botón principal */
+        .btn-primary-custom {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+            border: none;
+            color: white;
+            font-weight: 600;
+            padding: 12px 30px;
+            border-radius: 10px;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            box-shadow: 0 5px 15px rgba(67, 97, 238, 0.3);
+        }
+        
+        .btn-primary-custom:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 25px rgba(67, 97, 238, 0.4);
+            background: linear-gradient(135deg, #5a75f0 0%, #4a1cbd 100%);
+        }
+        
+        .btn-primary-custom:active {
+            transform: translateY(-1px);
+        }
+        
+        /* Tarjeta principal */
+        .card-custom {
+            background: var(--card-bg);
+            -webkit-backdrop-filter: blur(15px);
+            backdrop-filter: blur(15px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 20px;
+            margin-bottom: 30px;
+            overflow: hidden;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.2);
+        }
+        
+        .card-body {
+            padding: 25px;
+        }
+        
+        /* Tabla mejorada */
+        .table-custom {
+            background: transparent;
+            border-radius: 15px;
+            overflow: hidden;
+            margin: 0;
+        }
+        
+        .table-custom thead {
+            background: linear-gradient(135deg, rgba(67, 97, 238, 0.3) 0%, rgba(58, 12, 163, 0.3) 100%);
+        }
+        
+        .table-custom th {
+            color: white;
+            font-weight: 600;
+            padding: 18px 15px;
+            border-bottom: 2px solid rgba(67, 97, 238, 0.5);
+            text-transform: uppercase;
+            font-size: 0.85rem;
+            letter-spacing: 1px;
+        }
+        
+        .table-custom td {
+            color: var(--gray);
+            padding: 16px 15px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            vertical-align: middle;
+        }
+        
+        .table-custom tbody tr {
+            transition: all 0.3s ease;
+        }
+        
+        .table-custom tbody tr:hover {
+            background: rgba(67, 97, 238, 0.1);
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+        
+        /* Botones de acción */
+        .btn-outline-primary {
+            border: 2px solid var(--primary);
+            color: var(--primary);
+            font-weight: 500;
+            padding: 8px 15px;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-outline-primary:hover {
+            background: var(--primary);
+            color: white;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(67, 97, 238, 0.3);
+        }
+        
+        .btn-outline-danger {
+            border: 2px solid var(--danger);
+            color: var(--danger);
+            font-weight: 500;
+            padding: 8px 15px;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-outline-danger:hover {
+            background: var(--danger);
+            color: white;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(247, 37, 133, 0.3);
+        }
+        
+        /* Badges mejorados */
+        .badge-activo {
+            background: linear-gradient(135deg, rgba(76, 201, 240, 0.2) 0%, rgba(67, 97, 238, 0.2) 100%);
+            color: var(--accent);
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-weight: 600;
+            font-size: 0.8rem;
+            border: 1px solid rgba(0, 255, 255, 0.3);
+        }
+        
+        .badge-inactivo {
+            background: linear-gradient(135deg, rgba(247, 37, 133, 0.2) 0%, rgba(114, 9, 183, 0.2) 100%);
+            color: #ff6b9d;
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-weight: 600;
+            font-size: 0.8rem;
+            border: 1px solid rgba(247, 37, 133, 0.3);
+        }
+        
+        .badge-categoria {
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            padding: 6px 12px;
+            border-radius: 8px;
+            font-size: 0.8rem;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        /* Modal mejorado */
+        .modal-content {
+            background: var(--dark);
+            border: 1px solid rgba(67, 97, 238, 0.3);
+            border-radius: 20px;
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
+        }
+        
+        .modal-header {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+            border-bottom: 1px solid rgba(67, 97, 238, 0.3);
+            border-radius: 20px 20px 0 0;
+            padding: 25px 30px;
+        }
+        
+        .modal-title {
+            color: white;
+            font-weight: 600;
+            font-size: 1.5rem;
+        }
+        
+        .btn-close-white {
+            filter: invert(1) brightness(200%);
+            opacity: 0.8;
+        }
+        
+        .btn-close-white:hover {
+            opacity: 1;
+        }
+        
+        .modal-body {
+            padding: 30px;
+        }
+        
+        .form-control-custom {
+            background: rgba(255, 255, 255, 0.07);
+            border: 2px solid rgba(255, 255, 255, 0.1);
+            color: white;
+            border-radius: 10px;
+            padding: 12px 15px;
+            transition: all 0.3s ease;
+        }
+        
+        .form-control-custom:focus {
+            background: rgba(255, 255, 255, 0.1);
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px rgba(0, 255, 255, 0.1);
+            color: white;
+        }
+        
+        .form-control-custom::placeholder {
+            color: rgba(255, 255, 255, 0.5);
+        }
+        
+        .form-label {
+            color: white;
+            font-weight: 500;
+            margin-bottom: 8px;
+        }
+        
+        .modal-footer {
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 20px 30px;
+        }
+        
+        /* Botones del modal */
+        .btn-secondary {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: white;
+            padding: 10px 25px;
+            border-radius: 10px;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-secondary:hover {
+            background: rgba(255, 255, 255, 0.2);
+            transform: translateY(-2px);
+        }
+        
+        /* Estado de carga */
+        .loading-state {
+            text-align: center;
+            padding: 50px 20px;
+        }
+        
+        .spinner-border {
+            width: 3rem;
+            height: 3rem;
+            border-width: 3px;
+        }
+        
+        .spinner-border.text-primary {
+            color: var(--accent) !important;
+        }
+        
+        /* Fila vacía */
+        .empty-state {
+            text-align: center;
+            padding: 50px 20px;
+            color: var(--gray);
+        }
+        
+        .empty-state i {
+            font-size: 4rem;
+            margin-bottom: 20px;
+            opacity: 0.5;
+        }
+        
+        /* Responsive */
+        @media (max-width: 768px) {
+            .container-fluid {
+                padding: 20px;
+            }
+            
+            h1 {
+                font-size: 1.8rem;
+            }
+            
+            .table-responsive {
+                border-radius: 15px;
+                overflow: hidden;
+            }
+            
+            .table-custom th, .table-custom td {
+                padding: 12px 10px;
+                font-size: 0.9rem;
+            }
+            
+            .btn-primary-custom, .btn-outline-primary, .btn-outline-danger {
+                padding: 8px 12px;
+                font-size: 0.9rem;
+            }
+            
+            .modal-dialog {
+                margin: 10px;
+            }
+        }
+        
+        /* Animaciones */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .fade-in {
+            animation: fadeIn 0.5s ease forwards;
+        }
+        
+        /* Scrollbar personalizado */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        
+        ::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 10px;
+        }
+        
+        ::-webkit-scrollbar-thumb {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+            border-radius: 10px;
+        }
+        
+        ::-webkit-scrollbar-thumb:hover {
+            background: linear-gradient(135deg, #5a75f0 0%, #4a1cbd 100%);
+        }
+        
+        /* Enlaces de email */
+        a.text-info {
+            color: var(--accent) !important;
+            text-decoration: none;
+            transition: all 0.3s ease;
+        }
+        
+        a.text-info:hover {
+            color: white !important;
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+    <!-- Navbar Futurista -->
+    <nav class="navbar navbar-expand-lg navbar-custom">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="/dashboard">
+                <i class="fas fa-brain-circuit"></i> SISTEMA DE HORARIOS
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" 
+                    aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon" style="color: white;"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="/dashboard">
+                            <i class="fas fa-tachometer-alt me-1"></i> Dashboard
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/admin/asignaturas">
+                            <i class="fas fa-book me-1"></i> Asignaturas
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link active" href="/admin/profesores" aria-current="page">
+                            <i class="fas fa-chalkboard-teacher me-1"></i> Profesores
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/admin/horarios">
+                            <i class="fas fa-calendar-alt me-1"></i> Horarios
+                        </a>
+                    </li>
+                    <li class="nav-item ms-3">
+                        <button class="btn btn-outline-danger" onclick="logout()" title="Cerrar sesión" aria-label="Cerrar sesión">
+                            <i class="fas fa-sign-out-alt me-1"></i> Salir
+                        </button>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+    
+    <!-- Contenido Principal -->
+    <div class="container-fluid mt-4 fade-in">
+        <!-- Header con título y botón -->
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h1>
+                <i class="fas fa-chalkboard-teacher"></i>
+                <span>Gestión de Profesores</span>
+            </h1>
+            <button class="btn btn-primary-custom" onclick="mostrarModalNuevo()" 
+                    title="Crear nuevo profesor" aria-label="Crear nuevo profesor">
+                <i class="fas fa-plus"></i>
+                <span>Nuevo Profesor</span>
+            </button>
+        </div>
+        
+        <!-- Tarjeta con tabla -->
+        <div class="card card-custom">
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-custom table-hover">
+                        <thead>
+                            <tr>
+                                <th scope="col">Código</th>
+                                <th scope="col">Nombres</th>
+                                <th scope="col">Apellidos</th>
+                                <th scope="col">Categoría Académica</th>
+                                <th scope="col">Categoría Científica</th>
+                                <th scope="col">Email</th>
+                                <th scope="col">Teléfono</th>
+                                <th scope="col">Estado</th>
+                                <th scope="col">Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tablaProfesores">
+                            <!-- Estado de carga -->
+                            <tr id="loading-row">
+                                <td colspan="9" class="text-center loading-state">
+                                    <div class="spinner-border text-primary" role="status">
+                                        <span class="visually-hidden">Cargando profesores...</span>
+                                    </div>
+                                    <p class="mt-3">Cargando profesores...</p>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Modal para crear/editar profesor -->
+    <div class="modal fade" id="modalProfesor" tabindex="-1" aria-labelledby="modalProfesorLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="modalTitulo">Nuevo Profesor</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="formProfesor">
+                        <input type="hidden" id="profesorId">
+                        
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label for="codigo" class="form-label">Código *</label>
+                                <input type="text" class="form-control form-control-custom" id="codigo" required 
+                                       title="Código único del profesor" 
+                                       aria-label="Código del profesor"
+                                       placeholder="Ej: PRO001">
+                            </div>
+                            <div class="col-md-6">
+                                <label for="nombres" class="form-label">Nombres *</label>
+                                <input type="text" class="form-control form-control-custom" id="nombres" required 
+                                       title="Nombres del profesor"
+                                       aria-label="Nombres del profesor"
+                                       placeholder="Ej: Juan Carlos">
+                            </div>
+                        </div>
+                        
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label for="apellidos" class="form-label">Apellidos *</label>
+                                <input type="text" class="form-control form-control-custom" id="apellidos" required 
+                                       title="Apellidos del profesor"
+                                       aria-label="Apellidos del profesor"
+                                       placeholder="Ej: Pérez López">
+                            </div>
+                            <div class="col-md-6">
+                                <label for="categoria_academica" class="form-label">Categoría Académica</label>
+                                <select class="form-select form-control-custom" id="categoria_academica"
+                                        title="Categoría académica del profesor"
+                                        aria-label="Categoría académica">
+                                    <option value="">Seleccione una categoría</option>
+                                    <option value="Instructor">Instructor</option>
+                                    <option value="Asistente">Asistente</option>
+                                    <option value="Auxiliar">Auxiliar</option>
+                                    <option value="Titular">Titular</option>
+                                    <option value="Profesor Titular">Profesor Titular</option>
+                                </select>
+                            </div>
+                        </div>
+                        
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label for="categoria_cientifica" class="form-label">Categoría Científica</label>
+                                <select class="form-select form-control-custom" id="categoria_cientifica"
+                                        title="Categoría científica del profesor"
+                                        aria-label="Categoría científica">
+                                    <option value="">Seleccione una categoría</option>
+                                    <option value="Máster">Máster</option>
+                                    <option value="Doctor">Doctor</option>
+                                    <option value="Doctor en Ciencias">Doctor en Ciencias</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="email" class="form-label">Email</label>
+                                <input type="email" class="form-control form-control-custom" id="email" 
+                                       title="Correo electrónico del profesor"
+                                       aria-label="Email del profesor"
+                                       placeholder="profesor@universidad.edu">
+                            </div>
+                        </div>
+                        
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label for="telefono" class="form-label">Teléfono</label>
+                                <input type="text" class="form-control form-control-custom" id="telefono" 
+                                       title="Número de teléfono del profesor"
+                                       aria-label="Teléfono del profesor"
+                                       placeholder="Ej: +53 12345678">
+                            </div>
+                            <div class="col-md-6">
+                                <label for="activo" class="form-label">Estado</label>
+                                <select class="form-select form-control-custom" id="activo"
+                                        title="Estado del profesor"
+                                        aria-label="Estado">
+                                    <option value="true">Activo</option>
+                                    <option value="false">Inactivo</option>
+                                </select>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" 
+                            title="Cancelar operación" aria-label="Cancelar">
+                        Cancelar
+                    </button>
+                    <button type="button" class="btn btn-primary-custom" onclick="guardarProfesor()" 
+                            title="Guardar profesor" aria-label="Guardar">
+                        Guardar Profesor
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        let profesores = [];
+        let modalInstance = null;
+        
+        // Función para cargar profesores
+        async function cargarProfesores() {
+            try {
+                const response = await fetch('/api/profesores');
+                if (response.ok) {
+                    profesores = await response.json();
+                    renderizarTabla();
+                } else {
+                    mostrarError('Error al cargar los profesores');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                mostrarError('Error de conexión al servidor');
+            }
+        }
+        
+        // Función para renderizar la tabla
+        function renderizarTabla() {
+            const tbody = document.getElementById('tablaProfesores');
+            
+            // Remover fila de carga
+            const loadingRow = document.getElementById('loading-row');
+            if (loadingRow) loadingRow.remove();
+            
+            if (profesores.length === 0) {
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="9" class="empty-state">
+                            <i class="fas fa-chalkboard-teacher"></i>
+                            <h5 class="mt-3">No hay profesores registrados</h5>
+                            <p class="text-muted">Comienza agregando tu primer profesor</p>
+                            <button class="btn btn-primary-custom mt-3" onclick="mostrarModalNuevo()">
+                                <i class="fas fa-plus me-1"></i> Crear primer profesor
+                            </button>
+                        </td>
+                    </tr>
+                `;
+                return;
+            }
+            
+            let html = '';
+            profesores.forEach(profesor => {
+                html += `
+                    <tr class="fade-in">
+                        <td><strong style="color: var(--accent);">${profesor.codigo}</strong></td>
+                        <td>${profesor.nombres}</td>
+                        <td>${profesor.apellidos}</td>
+                        <td>
+                            ${profesor.categoria_academica 
+                                ? `<span class="badge-categoria">${profesor.categoria_academica}</span>` 
+                                : '<span class="text-muted">-</span>'}
+                        </td>
+                        <td>
+                            ${profesor.categoria_cientifica 
+                                ? `<span class="badge-categoria">${profesor.categoria_cientifica}</span>` 
+                                : '<span class="text-muted">-</span>'}
+                        </td>
+                        <td>
+                            ${profesor.email 
+                                ? `<a href="mailto:${profesor.email}" class="text-info">${profesor.email}</a>` 
+                                : '<span class="text-muted">-</span>'}
+                        </td>
+                        <td>${profesor.telefono || '<span class="text-muted">-</span>'}</td>
+                        <td>
+                            ${profesor.activo 
+                                ? '<span class="badge-activo">Activo</span>' 
+                                : '<span class="badge-inactivo">Inactivo</span>'}
+                        </td>
+                        <td>
+                            <div class="btn-group" role="group">
+                                <button class="btn btn-outline-primary me-2" onclick="editarProfesor(${profesor.id})" 
+                                        title="Editar profesor" aria-label="Editar profesor">
+                                    <i class="fas fa-edit"></i>
+                                </button>
+                                <button class="btn btn-outline-danger" onclick="eliminarProfesor(${profesor.id})" 
+                                        title="Eliminar profesor" aria-label="Eliminar profesor">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                `;
+            });
+            
+            tbody.innerHTML = html;
+        }
+        
+        // Función para mostrar modal nuevo
+        function mostrarModalNuevo() {
+            document.getElementById('modalTitulo').textContent = 'Nuevo Profesor';
+            document.getElementById('formProfesor').reset();
+            document.getElementById('profesorId').value = '';
+            document.getElementById('activo').value = 'true';
+            document.getElementById('categoria_academica').value = '';
+            document.getElementById('categoria_cientifica').value = '';
+            
+            if (modalInstance) {
+                modalInstance.show();
+            } else {
+                modalInstance = new bootstrap.Modal(document.getElementById('modalProfesor'));
+                modalInstance.show();
+            }
+        }
+        
+        // Función para editar profesor
+        async function editarProfesor(id) {
+            try {
+                const response = await fetch(`/api/profesores/${id}`);
+                
+                if (!response.ok) {
+                    const error = await response.json();
+                    throw new Error(error.error || `Error ${response.status}`);
+                }
+                
+                const profesor = await response.json();
+                
+                document.getElementById('modalTitulo').textContent = 'Editar Profesor';
+                document.getElementById('profesorId').value = profesor.id;
+                document.getElementById('codigo').value = profesor.codigo || '';
+                document.getElementById('nombres').value = profesor.nombres || '';
+                document.getElementById('apellidos').value = profesor.apellidos || '';
+                document.getElementById('categoria_academica').value = profesor.categoria_academica || '';
+                document.getElementById('categoria_cientifica').value = profesor.categoria_cientifica || '';
+                document.getElementById('email').value = profesor.email || '';
+                document.getElementById('telefono').value = profesor.telefono || '';
+                document.getElementById('activo').value = profesor.activo ? 'true' : 'false';
+                
+                if (!modalInstance) {
+                    modalInstance = new bootstrap.Modal(document.getElementById('modalProfesor'));
+                }
+                modalInstance.show();
+                
+            } catch (error) {
+                console.error('Error al cargar el profesor:', error);
+                alert(`Error al cargar el profesor: ${error.message}`);
+            }
+        }
+        
+        // Función para guardar profesor
+        async function guardarProfesor() {
+            const id = document.getElementById('profesorId').value;
+            const method = id ? 'PUT' : 'POST';
+            const url = id ? `/api/profesores/${id}` : '/api/profesores';
+            
+            // Validación
+            const codigo = document.getElementById('codigo').value.trim();
+            const nombres = document.getElementById('nombres').value.trim();
+            const apellidos = document.getElementById('apellidos').value.trim();
+            
+            if (!codigo || !nombres || !apellidos) {
+                alert('Error: Código, nombres y apellidos son campos obligatorios');
+                return;
+            }
+            
+            const data = {
+                codigo: codigo,
+                nombres: nombres,
+                apellidos: apellidos,
+                categoria_academica: document.getElementById('categoria_academica').value,
+                categoria_cientifica: document.getElementById('categoria_cientifica').value,
+                email: document.getElementById('email').value.trim(),
+                telefono: document.getElementById('telefono').value.trim(),
+                activo: document.getElementById('activo').value === 'true'
+            };
+            
+            try {
+                const response = await fetch(url, {
+                    method: method,
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(data)
+                });
+                
+                const result = await response.json();
+                
+                if (response.ok) {
+                    // Cerrar modal
+                    if (modalInstance) {
+                        modalInstance.hide();
+                    }
+                    // Recargar tabla
+                    await cargarProfesores();
+                    // Mostrar notificación de éxito
+                    mostrarNotificacion('success', result.message || 'Profesor guardado exitosamente');
+                } else {
+                    alert(`Error: ${result.error || 'Error desconocido'}`);
+                }
+            } catch (error) {
+                console.error('Error de conexión:', error);
+                alert('Error de conexión al servidor');
+            }
+        }
+        
+        // Función para eliminar profesor
+        async function eliminarProfesor(id) {
+            if (!confirm('¿Está seguro de eliminar este profesor?\nEsta acción no se puede deshacer.')) return;
+            
+            try {
+                const response = await fetch(`/api/profesores/${id}`, {
+                    method: 'DELETE'
+                });
+                
+                const result = await response.json();
+                
+                if (response.ok) {
+                    await cargarProfesores();
+                    mostrarNotificacion('success', 'Profesor eliminado exitosamente');
+                } else {
+                    mostrarNotificacion('error', `Error: ${result.error || 'Error al eliminar'}`);
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                mostrarNotificacion('error', 'Error de conexión al servidor');
+            }
+        }
+        
+        // Función para mostrar notificaciones
+        function mostrarNotificacion(tipo, mensaje) {
+            const alert = document.createElement('div');
+            alert.className = `alert alert-${tipo} alert-dismissible fade show position-fixed`;
+            alert.style.cssText = 'top: 20px; right: 20px; z-index: 9999; min-width: 300px;';
+            alert.setAttribute('role', 'alert');
+            alert.innerHTML = `
+                <i class="fas fa-${tipo === 'success' ? 'check-circle' : 'exclamation-triangle'} me-2"></i>
+                ${mensaje}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Cerrar notificación"></button>
+            `;
+            
+            document.body.appendChild(alert);
+            
+            setTimeout(() => {
+                if (alert.parentNode) {
+                    const bsAlert = new bootstrap.Alert(alert);
+                    bsAlert.close();
+                }
+            }, 3000);
+        }
+        
+        // Función para logout
+        async function logout() {
+            try {
+                const response = await fetch('/logout');
+                const data = await response.json();
+                
+                if (data.success) {
+                    window.location.href = '/';
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                mostrarNotificacion('error', 'Error al cerrar sesión');
+            }
+        }
+        
+        // Inicialización
+        document.addEventListener('DOMContentLoaded', function() {
+            cargarProfesores();
+            
+            // Configurar modal
+            const modalElement = document.getElementById('modalProfesor');
+            modalElement.addEventListener('hidden.bs.modal', function () {
+                document.getElementById('formProfesor').reset();
+            });
+            
+            // Prevenir envío del formulario con Enter
+            document.getElementById('formProfesor').addEventListener('keydown', function(e) {
+                if (e.key === 'Enter' && e.target.type !== 'textarea') {
+                    e.preventDefault();
+                }
+            });
+            
+            // Añadir clase fade-in a elementos dinámicos
+            const observer = new MutationObserver((mutations) => {
+                mutations.forEach((mutation) => {
+                    if (mutation.type === 'childList') {
+                        mutation.addedNodes.forEach((node) => {
+                            if (node.nodeType === 1 && node.tagName === 'TR') {
+                                node.classList.add('fade-in');
+                            }
+                        });
+                    }
+                });
+            });
+            
+            observer.observe(document.getElementById('tablaProfesores'), {
+                childList: true
+            });
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,57 @@
+# ============================================================
+# .gitignore - Sistema de Horarios Ingeniería
+# ============================================================
+
+# Variables de entorno (NUNCA subir)
+.env
+
+# Base de datos SQLite
+database/*.db
+database/*.sqlite
+database/*.sqlite3
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.pyc
+*.pyo
+*.pyd
+.Python
+
+# Entorno virtual
+venv/
+env/
+.venv/
+ENV/
+
+# Archivos subidos por usuarios
+uploads/
+
+# Distribución / empaquetado
+dist/
+build/
+*.egg-info/
+.eggs/
+
+# IDEs
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+.DS_Store?
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+
+# Logs
+*.log
+logs/
+
+# Cobertura de tests
+.coverage
+htmlcov/

@@ -1,0 +1,199 @@
+/* frontend/css/dashboard-animations.css */
+/* Animaciones para dashboard futurista */
+
+/* Tarjetas con efecto glassmorphism y hover */
+.glass-card {
+    background: rgba(255, 255, 255, 0.05);
+    backdrop-filter: blur(10px);
+    border-radius: 15px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+    overflow: hidden;
+}
+
+.glass-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+    transition: left 0.7s;
+}
+
+.glass-card:hover::before {
+    left: 100%;
+}
+
+.glass-card:hover {
+    transform: translateY(-5px) scale(1.02);
+    border-color: rgba(76, 201, 240, 0.5);
+    box-shadow: 0 15px 30px rgba(0, 0, 0, 0.3);
+}
+
+/* Navegación con efecto de luz */
+.nav-item {
+    position: relative;
+    overflow: hidden;
+}
+
+.nav-item::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 0;
+    height: 2px;
+    background: linear-gradient(90deg, #4cc9f0, #f72585);
+    transition: width 0.3s ease;
+}
+
+.nav-item.active::after,
+.nav-item:hover::after {
+    width: 100%;
+}
+
+/* Tablas con efecto de escaneo */
+.table-row {
+    position: relative;
+    transition: all 0.2s ease;
+}
+
+.table-row:hover {
+    background: rgba(76, 201, 240, 0.05);
+    transform: translateX(5px);
+}
+
+.table-row::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0;
+    height: 100%;
+    width: 0;
+    background: linear-gradient(90deg, rgba(76, 201, 240, 0.1), transparent);
+    transition: width 0.3s ease;
+}
+
+.table-row:hover::before {
+    width: 4px;
+}
+
+/* Efecto de carga progresiva */
+.fade-in-up {
+    opacity: 0;
+    transform: translateY(20px);
+    animation: fadeInUp 0.6s ease forwards;
+}
+
+@keyframes fadeInUp {
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Efecto para datos importantes */
+.highlight-data {
+    position: relative;
+    font-weight: bold;
+    color: #4cc9f0;
+    text-shadow: 0 0 10px rgba(76, 201, 240, 0.5);
+    animation: pulseGlow 2s infinite;
+}
+
+@keyframes pulseGlow {
+    0%, 100% { text-shadow: 0 0 10px rgba(76, 201, 240, 0.5); }
+    50% { text-shadow: 0 0 20px rgba(76, 201, 240, 0.8); }
+}
+
+/* Botones con efecto de carga */
+.btn-loading {
+    position: relative;
+    overflow: hidden;
+}
+
+.btn-loading::after {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: linear-gradient(45deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+    transform: rotate(45deg);
+    animation: btnShine 3s infinite;
+}
+
+@keyframes btnShine {
+    0% { transform: translateX(-100%) translateY(-100%) rotate(45deg); }
+    100% { transform: translateX(100%) translateY(100%) rotate(45deg); }
+}
+
+/* Gráficos animados */
+.chart-container {
+    position: relative;
+    opacity: 0;
+    animation: chartAppear 1s ease 0.3s forwards;
+}
+
+@keyframes chartAppear {
+    from {
+        opacity: 0;
+        transform: scale(0.8);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+/* Notificaciones flotantes */
+.floating-notification {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 10px;
+    padding: 15px;
+    transform: translateX(400px);
+    transition: transform 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+    z-index: 1000;
+}
+
+.floating-notification.show {
+    transform: translateX(0);
+}
+
+/* Efecto de selección */
+.selectable-item {
+    cursor: pointer;
+    transition: all 0.2s ease;
+    border: 2px solid transparent;
+}
+
+.selectable-item.selected {
+    border-color: #4cc9f0;
+    background: rgba(76, 201, 240, 0.1);
+    box-shadow: 0 0 20px rgba(76, 201, 240, 0.3);
+}
+
+/* Animación de entrada de página */
+.page-enter {
+    animation: pageEnter 0.5s ease forwards;
+}
+
+@keyframes pageEnter {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}

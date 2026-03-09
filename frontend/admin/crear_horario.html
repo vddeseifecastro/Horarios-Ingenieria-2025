@@ -1,0 +1,621 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Crear Nuevo Horario - Sistema de Horarios</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --color-primary: #4361ee;
+            --color-secondary: #3a0ca3;
+            --color-accent: #00ffff;
+            --color-success: #4cc9f0;
+            --color-warning: #f8961e;
+            --color-danger: #f72585;
+            --color-light: #f8f9fa;
+            --color-dark: #1a1a2e;
+            --color-bg: #0a0e17;
+            --color-card: #ffffff;
+            --color-text: #212529;
+            --color-text-light: #ffffff;
+            --color-gray: #6c757d;
+        }
+        
+        body {
+            background: linear-gradient(135deg, var(--color-bg) 0%, #0a0e17 100%);
+            min-height: 100vh;
+            padding: 20px;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            color: var(--color-text);
+        }
+        
+        .card {
+            border-radius: 16px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.25);
+            border: none;
+            overflow: hidden;
+            background: var(--color-card);
+        }
+        
+        .header-card {
+            background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-secondary) 100%);
+            color: white;
+            border-radius: 16px 16px 0 0;
+            padding: 1.5rem;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .header-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(45deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+            transform: translateX(-100%);
+            animation: shine 3s infinite;
+        }
+        
+        @keyframes shine {
+            100% { transform: translateX(100%); }
+        }
+        
+        .form-control:focus, .form-select:focus {
+            border-color: var(--color-primary);
+            box-shadow: 0 0 0 0.25rem rgba(67, 97, 238, 0.25);
+            outline: none;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-secondary) 100%);
+            border: none;
+            padding: 10px 30px;
+            font-weight: 500;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-primary:hover {
+            background: linear-gradient(135deg, #5a75f0 0%, #4a1cbd 100%);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(67, 97, 238, 0.3);
+        }
+        
+        .btn-secondary {
+            background: linear-gradient(135deg, #6c757d 0%, #495057 100%);
+            border: none;
+            font-weight: 500;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-secondary:hover {
+            background: linear-gradient(135deg, #7c848d 0%, #596067 100%);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(108, 117, 125, 0.2);
+        }
+        
+        .btn-light {
+            background: rgba(255, 255, 255, 0.15);
+            -webkit-backdrop-filter: blur(10px);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: white;
+            font-weight: 500;
+        }
+        
+        .btn-light:hover {
+            background: rgba(255, 255, 255, 0.25);
+            border-color: rgba(255, 255, 255, 0.3);
+            color: white;
+            transform: translateY(-1px);
+        }
+        
+        .preview-card {
+            background: linear-gradient(135deg, rgba(67, 97, 238, 0.05) 0%, rgba(58, 12, 163, 0.05) 100%);
+            border-left: 5px solid var(--color-primary);
+            border-radius: 12px;
+            padding: 1.25rem;
+            height: 100%;
+        }
+        
+        .form-label {
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            color: var(--color-text);
+        }
+        
+        .form-control, .form-select {
+            padding: 0.6rem 0.75rem;
+            border-radius: 8px;
+            border: 1px solid #dee2e6;
+            transition: all 0.2s ease;
+        }
+        
+        .form-control:hover, .form-select:hover {
+            border-color: var(--color-primary);
+        }
+        
+        .required-field::after {
+            content: " *";
+            color: var(--color-danger);
+        }
+        
+        /* ALERTAS MEJORADAS */
+        .alert-info {
+            background: linear-gradient(135deg, rgba(67, 97, 238, 0.1) 0%, rgba(58, 12, 163, 0.1) 100%);
+            border: 1px solid rgba(67, 97, 238, 0.2);
+            border-left: 5px solid var(--color-primary);
+            color: var(--color-text);
+            border-radius: 10px;
+        }
+        
+        .alert-warning {
+            background: linear-gradient(135deg, rgba(248, 150, 30, 0.1) 0%, rgba(247, 37, 133, 0.1) 100%);
+            border: 1px solid rgba(248, 150, 30, 0.2);
+            border-left: 5px solid var(--color-warning);
+            color: var(--color-text);
+            border-radius: 10px;
+        }
+        
+        /* CHECKBOX ESTILIZADO */
+        .form-check-input:checked {
+            background-color: var(--color-primary);
+            border-color: var(--color-primary);
+        }
+        
+        .form-check-input:focus {
+            border-color: var(--color-primary);
+            box-shadow: 0 0 0 0.25rem rgba(67, 97, 238, 0.25);
+        }
+        
+        /* VISTA PREVIA ESTILIZADA */
+        #previewTitulo {
+            color: var(--color-primary);
+            font-weight: 600;
+            font-size: 1.1rem;
+        }
+        
+        .preview-card strong {
+            color: var(--color-secondary);
+            font-weight: 600;
+        }
+        
+        /* RESPONSIVE */
+        @media (max-width: 768px) {
+            body {
+                padding: 10px;
+            }
+            
+            .header-card {
+                padding: 1rem;
+            }
+            
+            .preview-card {
+                margin-top: 1.5rem;
+            }
+            
+            .btn-primary, .btn-secondary {
+                padding: 8px 20px;
+                font-size: 0.9rem;
+            }
+        }
+        
+        /* EFECTO DE TEXTO */
+        h1, h2, h3, h4, h5, h6 {
+            font-weight: 600;
+        }
+        
+        .form-text {
+            color: var(--color-gray) !important;
+            font-size: 0.85rem;
+        }
+        
+        /* GRADIENTE EN TEXTO */
+        .gradient-text {
+            background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-accent) 100%);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+        
+        /* BOTÓN DE ENVÍO ANIMADO */
+        .btn-submit {
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .btn-submit::after {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: linear-gradient(45deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+            transform: rotate(45deg);
+            animation: btnShine 3s infinite;
+        }
+        
+        @keyframes btnShine {
+            0% { transform: translateX(-100%) translateY(-100%) rotate(45deg); }
+            100% { transform: translateX(100%) translateY(100%) rotate(45deg); }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-lg-11">
+                <div class="card">
+                    <div class="card-header header-card py-3">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <h1 class="h3 mb-1"><i class="fas fa-calendar-plus me-2"></i>Crear Nuevo Horario</h1>
+                                <small class="opacity-85">Configura un nuevo horario académico para la carrera</small>
+                            </div>
+                            <a href="/admin/dashboard" class="btn btn-light btn-sm" aria-label="Volver al Dashboard">
+                                <i class="fas fa-arrow-left me-1"></i> Volver al Dashboard
+                            </a>
+                        </div>
+                    </div>
+                    
+                    <div class="card-body p-3 p-md-4">
+                        <div class="row g-4">
+                            <div class="col-lg-8">
+                                <div class="alert alert-info mb-4" role="alert">
+                                    <div class="d-flex align-items-center">
+                                        <i class="fas fa-info-circle fa-2x me-3" style="color: var(--color-primary);"></i>
+                                        <div>
+                                            <h5 class="alert-heading mb-1">Información importante</h5>
+                                            <p class="mb-0">Complete los datos para crear un nuevo horario. Se generarán automáticamente 22 semanas con slots horarios configurables.</p>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <form id="formCrearHorario" aria-label="Formulario para crear nuevo horario">
+                                    <div class="row mb-4">
+                                        <div class="col-md-6 mb-3">
+                                            <label for="titulo" class="form-label required-field">Título del Horario</label>
+                                            <input type="text" id="titulo" class="form-control" name="titulo" 
+                                                   value="Horario Docente 2025-2026" required
+                                                   placeholder="Ingrese el título descriptivo del horario"
+                                                   aria-required="true">
+                                            <div class="form-text">Ej: Horario Docente 2025-2026 - Semestre 1</div>
+                                        </div>
+                                        <div class="col-md-6 mb-3">
+                                            <label for="año_academico" class="form-label required-field">Año Académico</label>
+                                            <input type="text" id="año_academico" class="form-control" name="año_academico" 
+                                                   value="2025-2026" placeholder="Ej: 2025-2026" required
+                                                   aria-required="true">
+                                            <div class="form-text">Formato: Año-Inicio / Año-Fin</div>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="row mb-4">
+                                        <div class="col-md-4 mb-3">
+                                            <label for="semestre" class="form-label required-field">Semestre</label>
+                                            <select id="semestre" class="form-select" name="semestre" required
+                                                    aria-label="Seleccionar semestre" aria-required="true">
+                                                <option value="1">Semestre 1</option>
+                                                <option value="2" selected>Semestre 2</option>
+                                            </select>
+                                            <div class="form-text">Seleccione el semestre</div>
+                                        </div>
+                                        <div class="col-md-4 mb-3">
+                                            <label for="año_carrera" class="form-label required-field">Año de Carrera</label>
+                                            <select id="año_carrera" class="form-select" name="año_carrera" required
+                                                    aria-label="Seleccionar año de carrera" aria-required="true">
+                                                <option value="1">1er Año</option>
+                                                <option value="2">2do Año</option>
+                                                <option value="3" selected>3er Año</option>
+                                                <option value="4">4to Año</option>
+                                            </select>
+                                            <div class="form-text">Nivel académico</div>
+                                        </div>
+                                        <div class="col-md-4 mb-3">
+                                            <label for="modalidad" class="form-label required-field">Modalidad</label>
+                                            <select id="modalidad" class="form-select" name="modalidad" required
+                                                    aria-label="Seleccionar modalidad" aria-required="true">
+                                                <option value="Diurno" selected>Diurno</option>
+                                                <option value="Por Encuentros">Por Encuentros</option>
+                                            </select>
+                                            <div class="form-text">Modalidad de estudio</div>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="row mb-4">
+                                        <div class="col-md-6 mb-3">
+                                            <label for="carrera" class="form-label">Carrera</label>
+                                            <input type="text" id="carrera" class="form-control" name="carrera" 
+                                                   value="INGENIERÍA INFORMÁTICA"
+                                                   placeholder="Nombre completo de la carrera"
+                                                   aria-label="Nombre de la carrera">
+                                            <div class="form-text">Nombre oficial de la carrera</div>
+                                        </div>
+                                        <div class="col-md-6 mb-3">
+                                            <label for="semanas_totales" class="form-label">Semanas Totales</label>
+                                            <div class="input-group">
+                                                <input type="number" id="semanas_totales" class="form-control" name="semanas_totales" 
+                                                       value="22" min="10" max="52"
+                                                       placeholder="Número total de semanas"
+                                                       aria-label="Número total de semanas del horario">
+                                                <span class="input-group-text" style="background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-secondary) 100%); color: white; border: none;">semanas</span>
+                                            </div>
+                                            <div class="form-text">Recomendado: 22 semanas (19 clases + 3 exámenes)</div>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="row mb-4">
+                                        <div class="col-md-6 mb-3">
+                                            <label for="fecha_inicio" class="form-label required-field">Fecha de Inicio</label>
+                                            <input type="date" id="fecha_inicio" class="form-control" name="fecha_inicio" required
+                                                   aria-label="Fecha de inicio del horario" aria-required="true">
+                                            <div class="form-text">Primer día del semestre</div>
+                                        </div>
+                                        <div class="col-md-6 mb-3">
+                                            <label for="fecha_fin" class="form-label required-field">Fecha de Fin</label>
+                                            <input type="date" id="fecha_fin" class="form-control" name="fecha_fin" required
+                                                   aria-label="Fecha de fin del horario" aria-required="true">
+                                            <div class="form-text">Último día del semestre</div>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="row mb-4">
+                                        <div class="col-md-4 mb-3">
+                                            <label for="semanas_clases" class="form-label">Semanas de Clases</label>
+                                            <div class="input-group">
+                                                <input type="number" id="semanas_clases" class="form-control" name="semanas_clases" 
+                                                       value="19" min="1"
+                                                       placeholder="Semanas de clases"
+                                                       aria-label="Número de semanas de clases">
+                                                <span class="input-group-text" style="background: linear-gradient(135deg, var(--color-success) 0%, var(--color-primary) 100%); color: white; border: none;">clases</span>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-4 mb-3">
+                                            <label for="semanas_examenes" class="form-label">Semanas de Exámenes</label>
+                                            <div class="input-group">
+                                                <input type="number" id="semanas_examenes" class="form-control" name="semanas_examenes" 
+                                                       value="3" min="1"
+                                                       placeholder="Semanas de exámenes"
+                                                       aria-label="Número de semanas de exámenes">
+                                                <span class="input-group-text" style="background: linear-gradient(135deg, var(--color-warning) 0%, var(--color-danger) 100%); color: white; border: none;">exámenes</span>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-4 mb-3">
+                                            <label class="form-label d-block">Opciones Avanzadas</label>
+                                            <div class="form-check">
+                                                <input class="form-check-input" type="checkbox" id="generarAuto"
+                                                       aria-label="Generar horario automáticamente">
+                                                <label class="form-check-label" for="generarAuto">
+                                                    Generar horario automático
+                                                </label>
+                                            </div>
+                                            <div class="form-text">Llenará automáticamente el horario base</div>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="d-grid gap-3 d-md-flex justify-content-md-end border-top pt-4">
+                                        <button type="button" class="btn btn-secondary me-md-2 px-4" onclick="window.history.back()"
+                                                aria-label="Cancelar y volver atrás">
+                                            <i class="fas fa-times me-2"></i> Cancelar
+                                        </button>
+                                        <button type="submit" class="btn btn-primary px-4 btn-submit" aria-label="Crear nuevo horario">
+                                            <i class="fas fa-plus-circle me-2"></i> Crear Horario
+                                        </button>
+                                    </div>
+                                </form>
+                            </div>
+                            
+                            <div class="col-lg-4">
+                                <div class="preview-card p-3 mb-4" role="region" aria-label="Vista previa del horario">
+                                    <h2 class="h5 mb-3"><i class="fas fa-eye me-2" style="color: var(--color-primary);"></i>Vista Previa</h2>
+                                    <div class="mb-3">
+                                        <strong class="d-block mb-1">Facultad:</strong>
+                                        <div class="ps-3">de Ciencias Técnicas y Agropecuarias</div>
+                                    </div>
+                                    <div class="mb-3">
+                                        <strong class="d-block mb-1">Horario Docente:</strong>
+                                        <div class="ps-3" id="previewTitulo">2025-2026 - Semestre 2</div>
+                                    </div>
+                                    <div class="mb-3">
+                                        <strong class="d-block mb-1">Año:</strong>
+                                        <span class="ps-3" id="previewAnio">3er Año</span>
+                                    </div>
+                                    <div class="mb-3">
+                                        <strong class="d-block mb-1">Carrera:</strong>
+                                        <span class="ps-3" id="previewCarrera">INGENIERÍA INFORMÁTICA</span>
+                                    </div>
+                                    <div class="mb-3">
+                                        <strong class="d-block mb-1">Modalidad:</strong>
+                                        <span class="ps-3" id="previewModalidad">Diurno</span>
+                                    </div>
+                                    <hr class="my-3">
+                                    <div class="text-center">
+                                        <small class="text-muted d-block">
+                                            <i class="fas fa-calendar-week me-1"></i>
+                                            <strong id="previewSemanas">22</strong> semanas totales
+                                        </small>
+                                        <small class="text-muted">
+                                            <i class="fas fa-clock me-1"></i>
+                                            <strong id="previewSlots">660</strong> slots horarios generados
+                                        </small>
+                                    </div>
+                                </div>
+                                
+                                <div class="alert alert-warning mb-0" role="alert">
+                                    <div class="d-flex align-items-center">
+                                        <i class="fas fa-exclamation-triangle fa-2x me-3" style="color: var(--color-warning);"></i>
+                                        <div>
+                                            <h5 class="alert-heading mb-1">Nota importante</h5>
+                                            <p class="mb-0">Después de crear el horario, podrá editarlo usando la interfaz de arrastrar y soltar (drag & drop) para asignar asignaturas, profesores y aulas.</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Set default dates
+        const today = new Date();
+        const startDate = new Date(today.getFullYear(), 8, 1); // September 1
+        const endDate = new Date(today.getFullYear() + 1, 0, 31); // January 31 next year
+        
+        document.getElementById('fecha_inicio').valueAsDate = startDate;
+        document.getElementById('fecha_fin').valueAsDate = endDate;
+        
+        // Update preview
+        function updatePreview() {
+            const titulo = document.getElementById('titulo').value;
+            const añoAcademico = document.getElementById('año_academico').value;
+            const semestre = document.getElementById('semestre').value;
+            const añoCarrera = document.getElementById('año_carrera').value;
+            const carrera = document.getElementById('carrera').value;
+            const modalidad = document.getElementById('modalidad').value;
+            const semanas = document.getElementById('semanas_totales').value;
+            
+            // Formatear año de carrera
+            let añoTexto = `${añoCarrera}er Año`;
+            if (añoCarrera === '2') añoTexto = '2do Año';
+            if (añoCarrera === '4') añoTexto = '4to Año';
+            
+            document.getElementById('previewTitulo').textContent = `${añoAcademico} - Semestre ${semestre}`;
+            document.getElementById('previewAnio').textContent = añoTexto;
+            document.getElementById('previewCarrera').textContent = carrera;
+            document.getElementById('previewModalidad').textContent = modalidad;
+            document.getElementById('previewSemanas').textContent = semanas;
+            
+            // Calcular slots (semanas * días * turnos por día)
+            const slots = semanas * 5 * 6; // 5 días por semana, 6 turnos por día
+            document.getElementById('previewSlots').textContent = slots;
+        }
+        
+        // Attach event listeners
+        document.querySelectorAll('#formCrearHorario input, #formCrearHorario select').forEach(el => {
+            el.addEventListener('change', updatePreview);
+            el.addEventListener('keyup', updatePreview);
+        });
+        
+        // Initial preview update
+        updatePreview();
+        
+        // Form submission
+        document.getElementById('formCrearHorario').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const submitBtn = document.querySelector('button[type="submit"]');
+            const originalText = submitBtn.innerHTML;
+            submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i> Creando...';
+            submitBtn.disabled = true;
+            
+            const formData = new FormData(this);
+            const data = Object.fromEntries(formData.entries());
+            
+            // Convert numbers
+            data.semestre = parseInt(data.semestre);
+            data.año_carrera = parseInt(data.año_carrera);
+            data.semanas_totales = parseInt(data.semanas_totales);
+            data.semanas_clases = parseInt(data.semanas_clases);
+            data.semanas_examenes = parseInt(data.semanas_examenes);
+            
+            try {
+                const response = await fetch('/api/horarios', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(data)
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    // Mostrar notificación de éxito
+                    showNotification('success', '¡Horario creado exitosamente! Redirigiendo...');
+                    
+                    // If auto-generate is checked
+                    if (document.getElementById('generarAuto').checked) {
+                        const horarioId = result.id;
+                        try {
+                            const genResponse = await fetch(`/api/horarios/${horarioId}/generar-automatico`, {
+                                method: 'POST'
+                            });
+                            
+                            const genResult = await genResponse.json();
+                            if (genResult.success) {
+                                showNotification('info', `Horario generado automáticamente: ${genResult.message}`);
+                            }
+                        } catch (genError) {
+                            console.error('Error en generación automática:', genError);
+                        }
+                    }
+                    
+                    // Redirect to editor after 2 seconds
+                    setTimeout(() => {
+                        window.location.href = `/admin/horarios/editar/${result.id}`;
+                    }, 2000);
+                    
+                } else {
+                    showNotification('error', `Error: ${result.error || 'No se pudo crear el horario'}`);
+                    submitBtn.innerHTML = originalText;
+                    submitBtn.disabled = false;
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                showNotification('error', 'Error de conexión con el servidor');
+                submitBtn.innerHTML = originalText;
+                submitBtn.disabled = false;
+            }
+        });
+        
+        // Función para mostrar notificaciones
+        function showNotification(type, message) {
+            const alert = document.createElement('div');
+            alert.className = `alert alert-${type === 'success' ? 'success' : 'danger'} alert-dismissible fade show position-fixed`;
+            alert.style.cssText = 'top: 20px; right: 20px; z-index: 9999; min-width: 300px; max-width: 400px;';
+            alert.setAttribute('role', 'alert');
+            
+            if (type === 'success') {
+                alert.innerHTML = `
+                    <div class="d-flex align-items-center">
+                        <i class="fas fa-check-circle fa-2x me-3 text-success"></i>
+                        <div>
+                            <h6 class="alert-heading mb-1">¡Éxito!</h6>
+                            <p class="mb-0">${message}</p>
+                        </div>
+                    </div>
+                `;
+            } else {
+                alert.innerHTML = `
+                    <div class="d-flex align-items-center">
+                        <i class="fas fa-exclamation-triangle fa-2x me-3 text-danger"></i>
+                        <div>
+                            <h6 class="alert-heading mb-1">Error</h6>
+                            <p class="mb-0">${message}</p>
+                        </div>
+                    </div>
+                `;
+            }
+            
+            document.body.appendChild(alert);
+            
+            // Auto-remove after 5 seconds
+            setTimeout(() => {
+                if (alert.parentNode) {
+                    alert.remove();
+                }
+            }, 5000);
+        }
+    </script>
+</body>
+</html>

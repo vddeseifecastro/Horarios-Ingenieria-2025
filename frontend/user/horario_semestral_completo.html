@@ -1,0 +1,1126 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Horario Semestral Completo - Sistema de Horarios</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --color-primary: #667eea;
+            --color-secondary: #764ba2;
+            --color-dark: #0f172a;
+            --color-light: #f8fafc;
+            --color-tech: #00ffff;
+            --color-accent: #f72585;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            color: #e2e8f0;
+            min-height: 100vh;
+        }
+        
+        /* Header futurista */
+        .tech-header {
+            background: linear-gradient(135deg, rgba(15, 23, 42, 0.95) 0%, rgba(30, 41, 59, 0.95) 100%);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid rgba(0, 255, 255, 0.1);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+            padding: 1rem 0;
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+        
+        .header-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+        
+        .logo-section {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        
+        .tech-icon {
+            font-size: 2.5rem;
+            color: var(--color-tech);
+            filter: drop-shadow(0 0 10px rgba(0, 255, 255, 0.3));
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { filter: drop-shadow(0 0 10px rgba(0, 255, 255, 0.3)); }
+            50% { filter: drop-shadow(0 0 20px rgba(0, 255, 255, 0.6)); }
+        }
+        
+        .title-section h1 {
+            background: linear-gradient(135deg, var(--color-tech) 0%, var(--color-primary) 100%);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            font-weight: 700;
+            font-size: 1.8rem;
+            margin: 0;
+        }
+        
+        .title-section p {
+            color: #94a3b8;
+            margin: 5px 0 0;
+            font-size: 0.9rem;
+        }
+        
+        /* Selector de horario futurista */
+        .tech-selector {
+            min-width: 300px;
+            flex: 1;
+            max-width: 400px;
+        }
+        
+        .selector-label {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: var(--color-tech);
+            font-weight: 500;
+            margin-bottom: 8px;
+        }
+        
+        .selector-box {
+            background: rgba(30, 41, 59, 0.8);
+            border: 2px solid rgba(0, 255, 255, 0.2);
+            border-radius: 12px;
+            padding: 10px 15px;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .selector-box::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(0, 255, 255, 0.1), transparent);
+            transition: left 0.7s;
+        }
+        
+        .selector-box:hover::before {
+            left: 100%;
+        }
+        
+        .selector-box:hover {
+            border-color: var(--color-tech);
+            box-shadow: 0 0 20px rgba(0, 255, 255, 0.2);
+        }
+        
+        .selector-box select {
+            background: transparent;
+            border: none;
+            color: white;
+            width: 100%;
+            font-size: 0.95rem;
+            font-weight: 500;
+            cursor: pointer;
+        }
+        
+        .selector-box select option {
+            background: #1e293b;
+            color: white;
+            padding: 10px;
+        }
+        
+        .selector-box select:focus {
+            outline: none;
+            box-shadow: none;
+        }
+        
+        .selector-hint {
+            color: #64748b;
+            font-size: 0.8rem;
+            margin-top: 5px;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        
+        /* Botones tecnológicos */
+        .tech-buttons {
+            display: flex;
+            gap: 10px;
+        }
+        
+        .tech-btn {
+            padding: 10px 20px;
+            border-radius: 10px;
+            border: 2px solid;
+            background: rgba(30, 41, 59, 0.8);
+            color: white;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            text-decoration: none;
+            cursor: pointer;
+        }
+        
+        .tech-btn-primary {
+            border-color: var(--color-tech);
+            color: var(--color-tech);
+        }
+        
+        .tech-btn-primary:hover {
+            background: rgba(0, 255, 255, 0.1);
+            box-shadow: 0 0 20px rgba(0, 255, 255, 0.3);
+            transform: translateY(-2px);
+        }
+        
+        .tech-btn-secondary {
+            border-color: #475569;
+            color: #cbd5e1;
+        }
+        
+        .tech-btn-secondary:hover {
+            background: rgba(71, 85, 105, 0.3);
+            transform: translateY(-2px);
+        }
+        
+        .tech-btn-danger {
+            border-color: var(--color-accent);
+            color: var(--color-accent);
+        }
+        
+        .tech-btn-danger:hover {
+            background: rgba(247, 37, 133, 0.1);
+            box-shadow: 0 0 20px rgba(247, 37, 133, 0.3);
+            transform: translateY(-2px);
+        }
+        
+        /* Cards de información modernas */
+        .info-grid {
+            margin: 30px 0;
+        }
+        
+        .tech-card {
+            background: rgba(30, 41, 59, 0.6);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(0, 255, 255, 0.1);
+            border-radius: 16px;
+            padding: 25px;
+            height: 100%;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .tech-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: linear-gradient(90deg, var(--color-tech), var(--color-accent));
+        }
+        
+        .tech-card:hover {
+            transform: translateY(-5px);
+            border-color: rgba(0, 255, 255, 0.3);
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.4);
+        }
+        
+        .card-icon {
+            width: 60px;
+            height: 60px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.8rem;
+            margin-bottom: 20px;
+            background: linear-gradient(135deg, rgba(0, 255, 255, 0.1) 0%, rgba(102, 126, 234, 0.1) 100%);
+            color: var(--color-tech);
+        }
+        
+        .card-value {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 5px;
+            background: linear-gradient(135deg, var(--color-tech) 0%, var(--color-primary) 100%);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+        
+        .card-label {
+            color: #94a3b8;
+            font-size: 0.9rem;
+            margin: 0;
+        }
+        
+        .card-description {
+            color: #cbd5e1;
+            font-size: 0.85rem;
+            margin-top: 10px;
+            opacity: 0.8;
+        }
+        
+        /* Leyenda futurista */
+        .legend-container {
+            margin: 30px 0;
+        }
+        
+        .legend-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-top: 15px;
+        }
+        
+        .legend-item {
+            background: rgba(30, 41, 59, 0.4);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 12px;
+            padding: 15px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            transition: all 0.2s ease;
+        }
+        
+        .legend-item:hover {
+            background: rgba(30, 41, 59, 0.6);
+            transform: translateX(5px);
+        }
+        
+        .legend-color {
+            width: 20px;
+            height: 20px;
+            border-radius: 4px;
+            flex-shrink: 0;
+        }
+        
+        .legend-text {
+            color: #cbd5e1;
+            font-size: 0.9rem;
+        }
+        
+        .legend-title {
+            background: linear-gradient(135deg, var(--color-tech) 0%, var(--color-primary) 100%);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            font-size: 1.3rem;
+            font-weight: 600;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        /* Las tablas mantienen su estilo original */
+        .schedule-table {
+            font-size: 0.85rem;
+            border-collapse: separate;
+            border-spacing: 2px;
+        }
+        
+        .schedule-table th {
+            background-color: #1e293b;
+            font-weight: 600;
+            text-align: center;
+            vertical-align: middle;
+            padding: 10px 5px !important;
+            border: 1px solid #334155;
+            color: #e2e8f0;
+        }
+        
+        .schedule-table td {
+            border: 1px solid #334155;
+            padding: 5px !important;
+            vertical-align: top;
+            min-height: 70px;
+            position: relative;
+            background-color: #1e293b;
+        }
+        
+        .time-slot-header {
+            background-color: #0f172a;
+            font-weight: bold;
+            width: 120px;
+            text-align: center;
+            color: var(--color-tech);
+        }
+        
+        .time-slot-header small {
+            display: block;
+            font-size: 0.8rem;
+            color: #94a3b8;
+            font-weight: normal;
+        }
+        
+        .schedule-cell {
+            height: 100%;
+            min-height: 70px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            padding: 5px;
+            border-radius: 4px;
+            transition: all 0.2s ease;
+        }
+        
+        .schedule-cell.occupied {
+            border-left: 4px solid;
+            color: #f1f5f9;
+            font-weight: 500;
+        }
+        
+        .schedule-cell.empty {
+            background-color: rgba(30, 41, 59, 0.5);
+            color: #64748b;
+            font-style: italic;
+        }
+        
+        .schedule-cell.viernes {
+            background-color: #1e293b;
+            color: #94a3b8;
+        }
+        
+        .schedule-cell.examen {
+            background: repeating-linear-gradient(
+                45deg,
+                rgba(254, 243, 199, 0.1),
+                rgba(254, 243, 199, 0.1) 10px,
+                rgba(253, 230, 138, 0.1) 10px,
+                rgba(253, 230, 138, 0.1) 20px
+            );
+            border: 1px solid #f59e0b;
+        }
+        
+        .subject-code {
+            font-weight: bold;
+            font-size: 0.95rem;
+            margin-bottom: 2px;
+        }
+        
+        .subject-name {
+            font-size: 0.75rem;
+            opacity: 0.9;
+            margin-bottom: 2px;
+            display: none;
+        }
+        
+        .professor-name {
+            font-size: 0.7rem;
+            opacity: 0.8;
+            font-style: italic;
+            display: none;
+        }
+        
+        .time-display {
+            font-size: 0.7rem;
+            color: #94a3b8;
+            margin-top: 3px;
+        }
+        
+        .examen-badge {
+            position: absolute;
+            top: 2px;
+            right: 2px;
+            background: #dc3545;
+            color: white;
+            font-size: 0.6rem;
+            padding: 1px 4px;
+            border-radius: 3px;
+        }
+        
+        .card-semana {
+            margin-bottom: 25px;
+            border: 1px solid rgba(0, 255, 255, 0.1);
+            border-radius: 12px;
+            overflow: hidden;
+            background: rgba(30, 41, 59, 0.6);
+        }
+        
+        .card-header-semana {
+            padding: 15px 20px;
+            font-weight: 600;
+            border-bottom: 1px solid rgba(0, 255, 255, 0.1);
+            background: rgba(15, 23, 42, 0.8);
+        }
+        
+        .semana-clases .card-header-semana {
+            border-left: 4px solid #28a745;
+        }
+        
+        .semana-examenes .card-header-semana {
+            border-left: 4px solid #dc3545;
+        }
+        
+        /* Responsive */
+        @media (max-width: 768px) {
+            .header-content {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            
+            .tech-selector {
+                max-width: 100%;
+            }
+            
+            .tech-buttons {
+                justify-content: center;
+            }
+            
+            .legend-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .card-value {
+                font-size: 2rem;
+            }
+        }
+        
+        /* Animaciones */
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .fade-in {
+            animation: fadeIn 0.6s ease forwards;
+        }
+        
+        .delay-1 { animation-delay: 0.1s; }
+        .delay-2 { animation-delay: 0.2s; }
+        .delay-3 { animation-delay: 0.3s; }
+        .delay-4 { animation-delay: 0.4s; }
+    </style>
+</head>
+<body>
+    <!-- Header Futurista -->
+    <div class="tech-header fade-in">
+        <div class="container">
+            <div class="header-content">
+                <div class="logo-section">
+                    <div class="tech-icon">
+                        <i class="fas fa-brain-circuit"></i>
+                    </div>
+                    <div class="title-section">
+                        <h1>Horario Semestral Completo</h1>
+                        <p id="headerInfo">
+                            <i class="fas fa-sync-alt fa-spin"></i> Cargando información del horario...
+                        </p>
+                    </div>
+                </div>
+                
+                <div class="tech-selector">
+                    <div class="selector-label">
+                        <i class="fas fa-calendar-alt"></i>
+                        <span>Seleccionar Horario:</span>
+                    </div>
+                    <div class="selector-box">
+                        <select class="form-select" id="selectorHorario" aria-label="Seleccionar horario académico">
+                            <option value="">Cargando horarios disponibles...</option>
+                        </select>
+                    </div>
+                    <div class="selector-hint">
+                        <i class="fas fa-info-circle"></i>
+                        Selecciona el año y semestre para ver el horario correspondiente
+                    </div>
+                </div>
+                
+                <div class="tech-buttons">
+                    <a href="/dashboard" class="tech-btn tech-btn-primary">
+                        <i class="fas fa-arrow-left"></i> Volver
+                    </a>
+                    <button class="tech-btn tech-btn-secondary" onclick="imprimirHorario()">
+                        <i class="fas fa-print"></i> Imprimir
+                    </button>
+                    <button class="tech-btn tech-btn-danger" onclick="exportarPDF()">
+                        <i class="fas fa-file-pdf"></i> PDF
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Contenido Principal -->
+    <div class="container py-4">
+        <!-- Información del horario - Cards Modernas -->
+        <div class="info-grid fade-in delay-1">
+            <div class="row g-4" id="infoHorario">
+                <div class="col-md-3">
+                    <div class="tech-card">
+                        <div class="card-icon">
+                            <i class="fas fa-calendar-alt"></i>
+                        </div>
+                        <div class="card-value" id="cardAnoAcademico">2025-2026</div>
+                        <div class="card-label">Año Académico</div>
+                        <div class="card-description">Período académico vigente</div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="tech-card">
+                        <div class="card-icon">
+                            <i class="fas fa-graduation-cap"></i>
+                        </div>
+                        <div class="card-value" id="cardCarrera">ING. INFORMÁTICA</div>
+                        <div class="card-label">Carrera - Año <span id="cardAnoCarrera">3</span></div>
+                        <div class="card-description">Programa de estudios</div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="tech-card">
+                        <div class="card-icon">
+                            <i class="fas fa-layer-group"></i>
+                        </div>
+                        <div class="card-value" id="cardSemestre">Semestre 1</div>
+                        <div class="card-label" id="cardModalidad">Diurno</div>
+                        <div class="card-description">Período y modalidad</div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="tech-card">
+                        <div class="card-icon">
+                            <i class="fas fa-chart-bar"></i>
+                        </div>
+                        <div class="card-value" id="cardSemanas">22</div>
+                        <div class="card-label">Semanas Totales</div>
+                        <div class="card-description" id="cardOcupacion">5% ocupado</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Leyenda Futurista -->
+        <div class="legend-container fade-in delay-2">
+            <div class="tech-card">
+                <h3 class="legend-title">
+                    <i class="fas fa-info-circle"></i> Leyenda
+                </h3>
+                <div class="legend-grid">
+                    <div class="legend-item">
+                        <div class="legend-color" style="background-color: #e9ecef;"></div>
+                        <div class="legend-text">Viernes (Sin clases)</div>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-color" style="background: repeating-linear-gradient(45deg, #fef3c7, #fef3c7 10px, #fde68a 10px, #fde68a 20px);"></div>
+                        <div class="legend-text">Semana de exámenes</div>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-color" style="background-color: #d4edda;"></div>
+                        <div class="legend-text">Semana de clases</div>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-color" style="background: linear-gradient(90deg, #667eea, #764ba2);"></div>
+                        <div class="legend-text">Color de asignatura</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Contenedor de semanas (se mantiene igual) -->
+        <div id="contenedorSemanas" class="fade-in delay-3">
+            <div class="text-center py-5">
+                <div class="spinner-border text-tech" style="color: #00ffff;" role="status">
+                    <span class="visually-hidden">Cargando...</span>
+                </div>
+                <p class="mt-3 text-tech">Cargando horario semestral...</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal para detalles -->
+    <div class="modal fade" id="modalDetalles" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content" style="background: #1e293b; color: #e2e8f0; border: 1px solid rgba(0, 255, 255, 0.1);">
+                <div class="modal-header" style="border-bottom: 1px solid rgba(0, 255, 255, 0.1);">
+                    <h5 class="modal-title" style="color: var(--color-tech);">
+                        <i class="fas fa-info-circle me-2"></i>Detalles de la Clase
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body" id="detallesContenido">
+                    <!-- Dinámico -->
+                </div>
+                <div class="modal-footer" style="border-top: 1px solid rgba(0, 255, 255, 0.1);">
+                    <button type="button" class="tech-btn tech-btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script>
+        let horarioData = null;
+        let horariosDisponibles = [];
+        let horarioSeleccionado = null;
+        
+        // Inicializar
+        document.addEventListener('DOMContentLoaded', async function() {
+            await cargarHorariosDisponibles();
+            await cargarHorarioSemestral();
+            
+            // Animación de entrada
+            document.querySelectorAll('.fade-in').forEach(el => {
+                el.style.opacity = '0';
+            });
+        });
+        
+        // Cargar lista de horarios disponibles
+        async function cargarHorariosDisponibles() {
+            try {
+                const response = await fetch('/api/horarios-disponibles-usuario');
+                const data = await response.json();
+                
+                if (data.success) {
+                    horariosDisponibles = data.horarios_disponibles;
+                    actualizarSelectorHorarios();
+                }
+            } catch (error) {
+                console.error('Error cargando horarios disponibles:', error);
+            }
+        }
+        
+        // Actualizar el selector de horarios
+        function actualizarSelectorHorarios() {
+            const selector = document.getElementById('selectorHorario');
+            selector.innerHTML = '<option value="">Seleccione un horario...</option>';
+            
+            horariosDisponibles.forEach(horario => {
+                const option = document.createElement('option');
+                option.value = horario.id;
+                option.textContent = `Año ${horario.año_carrera} - Semestre ${horario.semestre} (${horario.año_academico})`;
+                option.dataset.ano = horario.año_carrera;
+                option.dataset.semestre = horario.semestre;
+                option.dataset.id = horario.id;
+                selector.appendChild(option);
+            });
+            
+            if (horariosDisponibles.length === 1) {
+                const unicoHorario = horariosDisponibles[0];
+                selector.value = unicoHorario.id;
+                horarioSeleccionado = {
+                    id: unicoHorario.id,
+                    año: unicoHorario.año_carrera,
+                    semestre: unicoHorario.semestre
+                };
+            }
+            
+            selector.addEventListener('change', function() {
+                const selectedOption = selector.options[selector.selectedIndex];
+                if (selectedOption && selectedOption.value) {
+                    horarioSeleccionado = {
+                        id: parseInt(selectedOption.value),
+                        año: parseInt(selectedOption.dataset.ano),
+                        semestre: parseInt(selectedOption.dataset.semestre)
+                    };
+                    cargarHorarioSemestral();
+                }
+            });
+        }
+        
+        // Cargar horario semestral con parámetros
+        async function cargarHorarioSemestral() {
+            try {
+                let url = '/api/mi-horario/vista-semestral-completa';
+                
+                if (horarioSeleccionado) {
+                    url += `?ano=${horarioSeleccionado.año}&semestre=${horarioSeleccionado.semestre}`;
+                }
+                
+                const response = await fetch(url);
+                const data = await response.json();
+                
+                if (data.success) {
+                    horarioData = data;
+                    actualizarCardsInformacion();
+                    generarTodasSemanas();
+                } else {
+                    mostrarError('Error al cargar el horario: ' + (data.message || 'Error desconocido'));
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                mostrarError('Error de conexión al cargar el horario');
+            }
+        }
+        
+        // Actualizar las cards de información
+        function actualizarCardsInformacion() {
+            const horario = horarioData.horario;
+            
+            // Actualizar header
+            document.getElementById('headerInfo').innerHTML = `
+                <i class="fas fa-check-circle"></i> ${horario.carrera} - ${horario.año_academico} - Semestre ${horario.semestre} • <span class="text-tech">${calcularPorcentajeOcupado()}% ocupado</span>
+            `;
+            
+            // Actualizar cards
+            document.getElementById('cardAnoAcademico').textContent = horario.año_academico;
+            document.getElementById('cardCarrera').textContent = horario.carrera;
+            document.getElementById('cardAnoCarrera').textContent = horario.año_carrera;
+            document.getElementById('cardSemestre').textContent = `Semestre ${horario.semestre}`;
+            document.getElementById('cardModalidad').textContent = horario.modalidad;
+            document.getElementById('cardSemanas').textContent = horarioData.total_semanas || 22;
+            document.getElementById('cardOcupacion').textContent = `${calcularPorcentajeOcupado()}% ocupado`;
+        }
+        
+        // Calcular porcentaje de ocupación
+        function calcularPorcentajeOcupado() {
+            if (!horarioData.semanas || horarioData.semanas.length === 0) return 0;
+            
+            let totalSlots = 0;
+            let slotsOcupados = 0;
+            
+            horarioData.semanas.forEach(semana => {
+                semana.turnos.forEach(turno => {
+                    ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes'].forEach(dia => {
+                        totalSlots++;
+                        if (turno.dias[dia].ocupado) {
+                            slotsOcupados++;
+                        }
+                    });
+                });
+            });
+            
+            return Math.round((slotsOcupados / totalSlots) * 100) || 0;
+        }
+        
+        // Generar todas las semanas (se mantiene igual)
+        function generarTodasSemanas() {
+            const contenedor = document.getElementById('contenedorSemanas');
+            contenedor.innerHTML = '';
+            
+            horarioData.semanas.forEach(semana => {
+                const semanaHtml = crearTablaSemana(semana);
+                contenedor.innerHTML += semanaHtml;
+            });
+            
+            // Añadir eventos de hover para mostrar detalles
+            document.querySelectorAll('.schedule-cell.occupied').forEach(cell => {
+                cell.addEventListener('mouseenter', function() {
+                    this.style.transform = 'scale(1.02)';
+                    this.style.boxShadow = '0 4px 12px rgba(0,0,0,0.3)';
+                    this.style.zIndex = '10';
+                    
+                    const nombre = this.querySelector('.subject-name');
+                    const profesor = this.querySelector('.professor-name');
+                    if (nombre) nombre.style.display = 'block';
+                    if (profesor) profesor.style.display = 'block';
+                });
+                
+                cell.addEventListener('mouseleave', function() {
+                    this.style.transform = '';
+                    this.style.boxShadow = '';
+                    this.style.zIndex = '';
+                    
+                    const nombre = this.querySelector('.subject-name');
+                    const profesor = this.querySelector('.professor-name');
+                    if (nombre) nombre.style.display = 'none';
+                    if (profesor) profesor.style.display = 'none';
+                });
+                
+                cell.addEventListener('click', function() {
+                    mostrarDetallesClase(this.dataset);
+                });
+            });
+        }
+        
+        // Crear tabla para una semana (se mantiene igual)
+        function crearTablaSemana(semana) {
+            const esExamen = semana.es_examen;
+            const claseCard = esExamen ? 'semana-examenes' : 'semana-clases';
+            const tituloSemana = esExamen ? `📝 SEMANA DE EXÁMENES` : `📚 SEMANA DE CLASES`;
+            
+            let html = `
+                <div class="card-semana ${claseCard}">
+                    <div class="card-header-semana">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <i class="fas fa-calendar-week me-2"></i>
+                                <strong>${tituloSemana} ${semana.numero}</strong>
+                                <span class="ms-3">${semana.rango_fechas}</span>
+                            </div>
+                            <div>
+                                <span class="badge ${esExamen ? 'bg-danger' : 'bg-success'}">
+                                    ${esExamen ? 'EXÁMENES' : 'CLASES'}
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card-body p-0">
+                        <div class="table-responsive">
+                            <table class="table schedule-table mb-0">
+                                <thead>
+                                    <tr>
+                                        <th class="time-slot-header">HORARIO / DÍA</th>
+                                        <th class="text-center" style="background-color: rgba(248, 215, 218, 0.1);">LUNES</th>
+                                        <th class="text-center" style="background-color: rgba(209, 236, 241, 0.1);">MARTES</th>
+                                        <th class="text-center" style="background-color: rgba(212, 237, 218, 0.1);">MIÉRCOLES</th>
+                                        <th class="text-center" style="background-color: rgba(255, 243, 205, 0.1);">JUEVES</th>
+                                        <th class="text-center" style="background-color: rgba(226, 227, 229, 0.1);">VIERNES</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+            `;
+            
+            // Procesar turnos
+            let turnoAnteriorSeccion = '';
+            let recesoAgregado = false;
+            
+            semana.turnos.forEach(turno => {
+                if (turnoAnteriorSeccion === 'mañana' && turno.seccion === 'tarde' && !recesoAgregado) {
+                    html += `
+                        <tr style="background-color: rgba(30, 41, 59, 0.8); height: 30px;">
+                            <td colspan="6" class="text-center py-1" style="font-weight: bold; color: #94a3b8;">
+                                <i class="fas fa-utensils me-1"></i> RECESO - ALMUERZO
+                            </td>
+                        </tr>
+                    `;
+                    recesoAgregado = true;
+                }
+                
+                turnoAnteriorSeccion = turno.seccion;
+                
+                const claseFila = turno.seccion === 'mañana' ? 'table-info' : 'table-warning';
+                
+                html += `
+                    <tr class="${claseFila}">
+                        <td class="time-slot-header">
+                            <strong>${turno.nombre}</strong><br>
+                            <small>${turno.hora_inicio} - ${turno.hora_fin}</small>
+                        </td>
+                `;
+                
+                const dias = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes'];
+                
+                dias.forEach(dia => {
+                    const slot = turno.dias[dia];
+                    const esViernes = dia === 'Viernes';
+                    
+                    if (slot.ocupado) {
+                        html += `
+                            <td>
+                                <div class="schedule-cell occupied" 
+                                     style="background-color: ${slot.color}20; border-left-color: ${slot.color};"
+                                     data-asignatura="${slot.codigo}"
+                                     data-nombre="${slot.nombre}"
+                                     data-profesor="${slot.profesor || 'Sin profesor'}"
+                                     data-hora="${turno.hora_inicio} - ${turno.hora_fin}"
+                                     data-dia="${dia}"
+                                     data-semana="${semana.numero}"
+                                     data-color="${slot.color}"
+                                     data-examen="${slot.es_examen}"
+                                     role="button"
+                                     tabindex="0"
+                                     aria-label="Clase de ${slot.codigo} - ${slot.nombre}">
+                                    <div class="subject-code" style="color: ${slot.color};">${slot.codigo}</div>
+                                    <div class="subject-name">${slot.nombre}</div>
+                                    <div class="professor-name">${slot.profesor || ''}</div>
+                                    <div class="time-display">${turno.hora_inicio}</div>
+                                    ${slot.es_examen ? '<span class="examen-badge">EX</span>' : ''}
+                                </div>
+                            </td>
+                        `;
+                    } else if (esViernes) {
+                        html += `
+                            <td>
+                                <div class="schedule-cell viernes">
+                                    <i class="fas fa-lock text-muted"></i><br>
+                                    <small class="text-muted">NO DISPONIBLE</small>
+                                </div>
+                            </td>
+                        `;
+                    } else if (esExamen) {
+                        html += `
+                            <td>
+                                <div class="schedule-cell examen">
+                                    <i class="fas fa-file-alt text-warning"></i><br>
+                                    <small class="text-warning">EXAMEN</small>
+                                </div>
+                            </td>
+                        `;
+                    } else {
+                        html += `
+                            <td>
+                                <div class="schedule-cell empty">
+                                    <i class="fas fa-plus text-muted"></i><br>
+                                    <small class="text-muted">VACÍO</small>
+                                </div>
+                            </td>
+                        `;
+                    }
+                });
+                
+                html += `</tr>`;
+            });
+            
+            html += `
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            return html;
+        }
+        
+        // Las funciones restantes se mantienen igual...
+        function mostrarDetallesClase(datos) {
+            const modal = new bootstrap.Modal(document.getElementById('modalDetalles'));
+            const contenido = document.getElementById('detallesContenido');
+            
+            let html = `
+                <div class="row">
+                    <div class="col-md-3 text-center">
+                        <div style="width: 100px; height: 100px; border-radius: 10px; background-color: ${datos.color}20; 
+                             border: 4px solid ${datos.color}; display: flex; align-items: center; justify-content: center; margin: 0 auto 20px;">
+                            <h2 style="color: ${datos.color}; margin: 0;">${datos.asignatura}</h2>
+                        </div>
+                    </div>
+                    <div class="col-md-9">
+                        <h4 style="color: var(--color-tech);">${datos.nombre}</h4>
+                        <table class="table table-borderless" style="color: #e2e8f0;">
+                            <tr>
+                                <th style="width: 150px;">Profesor:</th>
+                                <td>${datos.profesor}</td>
+                            </tr>
+                            <tr>
+                                <th>Horario:</th>
+                                <td>${datos.hora}</td>
+                            </tr>
+                            <tr>
+                                <th>Día:</th>
+                                <td>${datos.dia} - Semana ${datos.semana}</td>
+                            </tr>
+                            <tr>
+                                <th>Tipo:</th>
+                                <td>
+                                    ${datos.examen === 'true' ? 
+                                        '<span class="badge bg-danger">EXAMEN</span>' : 
+                                        '<span class="badge bg-success">CLASE REGULAR</span>'}
+                                </td>
+                            </tr>
+                        </table>
+                        
+                        <div class="alert alert-info mt-3" style="background: rgba(0, 255, 255, 0.1); border-color: rgba(0, 255, 255, 0.3); color: #e2e8f0;">
+                            <i class="fas fa-info-circle me-2"></i>
+                            Esta vista es de solo lectura. Para modificar el horario, contacta al administrador.
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            contenido.innerHTML = html;
+            modal.show();
+        }
+        
+        function imprimirHorario() {
+            window.print();
+        }
+        
+        function exportarPDF() {
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF('l', 'mm', 'a4');
+            
+            doc.setFontSize(20);
+            doc.text('HORARIO SEMESTRAL COMPLETO', 105, 20, { align: 'center' });
+            
+            doc.setFontSize(12);
+            if (horarioData && horarioData.horario) {
+                doc.text(horarioData.horario.carrera, 105, 30, { align: 'center' });
+                doc.text(`${horarioData.horario.año_academico} - Semestre ${horarioData.horario.semestre}`, 105, 37, { align: 'center' });
+            }
+            
+            doc.setFontSize(10);
+            doc.text(`Generado: ${new Date().toLocaleDateString('es-ES')}`, 20, 50);
+            doc.text(`Total semanas: ${horarioData ? horarioData.total_semanas : 'N/A'}`, 20, 57);
+            
+            let yPos = 70;
+            
+            if (horarioData && horarioData.semanas) {
+                horarioData.semanas.slice(0, 3).forEach((semana, index) => {
+                    if (yPos > 250) {
+                        doc.addPage();
+                        yPos = 20;
+                    }
+                    
+                    doc.setFontSize(11);
+                    doc.setFillColor(semana.es_examen ? 255 : 200, 200, 200);
+                    doc.rect(20, yPos, 250, 8, 'F');
+                    doc.text(`Semana ${semana.numero}: ${semana.rango_fechas}`, 25, yPos + 6);
+                    
+                    yPos += 15;
+                    
+                    doc.setFontSize(9);
+                    doc.text(`Tipo: ${semana.es_examen ? 'Exámenes' : 'Clases'}`, 25, yPos);
+                    yPos += 20;
+                });
+            }
+            
+            doc.save(`horario_${horarioData ? horarioData.horario.año_academico : 'actual'}.pdf`);
+            
+            mostrarNotificacion('success', '✅ PDF generado (versión simplificada)');
+        }
+        
+        function mostrarError(mensaje) {
+            document.getElementById('contenedorSemanas').innerHTML = `
+                <div class="alert alert-danger">
+                    <i class="fas fa-exclamation-circle me-2"></i>
+                    ${mensaje}
+                    <button class="btn btn-sm btn-outline-danger ms-3" onclick="cargarHorarioSemestral()">
+                        <i class="fas fa-redo me-1"></i> Reintentar
+                    </button>
+                </div>
+            `;
+        }
+        
+        function mostrarNotificacion(tipo, mensaje) {
+            const alert = document.createElement('div');
+            alert.className = `alert alert-${tipo} alert-dismissible fade show position-fixed`;
+            alert.style.cssText = 'top: 20px; right: 20px; z-index: 9999; min-width: 300px; background: #1e293b; color: white; border: 1px solid rgba(0, 255, 255, 0.2);';
+            alert.innerHTML = `
+                ${mensaje}
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="alert"></button>
+            `;
+            
+            document.body.appendChild(alert);
+            
+            setTimeout(() => {
+                if (alert.parentNode) {
+                    const bsAlert = new bootstrap.Alert(alert);
+                    bsAlert.close();
+                }
+            }, 3000);
+        }
+        
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                const modal = bootstrap.Modal.getInstance(document.getElementById('modalDetalles'));
+                if (modal) modal.hide();
+            }
+        });
+    </script>
+</body>
+</html>

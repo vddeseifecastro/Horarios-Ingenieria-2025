@@ -1,0 +1,1614 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Editor de Horario - Sistema de Horarios</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/dragula@3.7.3/dist/dragula.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --color-primary: #667eea;
+            --color-secondary: #764ba2;
+            --color-success: #10b981;
+            --color-warning: #f59e0b;
+            --color-danger: #ef4444;
+        }
+        
+        body {
+            background: #f8fafc;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        .header-bar {
+            background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-secondary) 100%);
+            color: white;
+            padding: 1rem;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+        
+        .slot {
+            min-height: 100px;
+            border: 2px dashed #cbd5e1;
+            border-radius: 8px;
+            background: white;
+            margin-bottom: 10px;
+            padding: 10px;
+            cursor: move;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+        
+        .slot:hover {
+            border-color: var(--color-primary);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.1);
+        }
+        
+        .slot.ocupado {
+            border: 2px solid;
+            border-left: 6px solid;
+        }
+        
+        .slot-examen {
+            background: repeating-linear-gradient(
+                45deg,
+                #fef3c7,
+                #fef3c7 10px,
+                #fde68a 10px,
+                #fde68a 20px
+            );
+            border-color: #f59e0b !important;
+        }
+        
+        .asignatura-item {
+            padding: 12px;
+            margin-bottom: 10px;
+            border-radius: 8px;
+            color: white;
+            cursor: move;
+            transition: transform 0.2s;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+        }
+        
+        .asignatura-item:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        }
+        
+        .turno-header {
+            background: #e2e8f0;
+            font-weight: bold;
+            padding: 8px;
+            border-radius: 6px;
+            margin-bottom: 5px;
+            font-size: 0.9rem;
+        }
+        
+        .semana-tab {
+            padding: 10px 20px;
+            border: 2px solid #cbd5e1;
+            border-bottom: none;
+            border-radius: 8px 8px 0 0;
+            background: #f1f5f9;
+            cursor: pointer;
+            margin-right: 5px;
+            transition: all 0.3s;
+        }
+        
+        .semana-tab.active {
+            background: white;
+            border-color: var(--color-primary);
+            color: var(--color-primary);
+            font-weight: bold;
+        }
+        
+        .semana-tab.examen {
+            background: #fef3c7;
+            border-color: #f59e0b;
+        }
+        
+        .stats-card {
+            background: white;
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 15px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+        }
+        
+        .slot-content {
+            font-size: 0.85rem;
+        }
+        
+        .slot-content strong {
+            font-size: 0.9rem;
+        }
+        
+        .gu-mirror {
+            opacity: 0.9 !important;
+            transform: rotate(3deg);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2) !important;
+        }
+        
+        .dia-header {
+            background: #475569;
+            color: white;
+            padding: 10px;
+            text-align: center;
+            border-radius: 6px;
+            margin-bottom: 10px;
+            font-weight: bold;
+        }
+        
+        .hora-display {
+            font-size: 0.75rem;
+            color: #64748b;
+            font-family: 'Courier New', monospace;
+        }
+        
+        .progress-container {
+            height: 8px;
+            background: #e5e7eb;
+            border-radius: 4px;
+            overflow: hidden;
+            margin-top: 5px;
+        }
+        
+        .progress-bar-custom {
+            height: 100%;
+            border-radius: 4px;
+        }
+        
+        .card-scroll {
+            max-height: 500px;
+            overflow-y: auto;
+        }
+        
+        .tabs-container {
+            overflow-x: auto;
+            white-space: nowrap;
+        }
+        
+        .notificacion {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 9999;
+            min-width: 300px;
+        }
+        
+        .color-badge {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border-radius: 4px;
+            vertical-align: middle;
+        }
+        
+        .gu-transit {
+            opacity: 1;
+            transform: scale(0.97);
+            border: 2px dashed rgba(0, 255, 255, 0.5) !important;
+            filter: brightness(0.75);
+            transition: none;
+        }
+        
+        .fecha-display {
+            font-size: 0.8rem;
+            font-weight: bold;
+        }
+        
+        .slot-vacio {
+            background: repeating-linear-gradient(
+                -45deg,
+                transparent,
+                transparent 10px,
+                rgba(0,0,0,0.05) 10px,
+                rgba(0,0,0,0.05) 20px
+            );
+        }
+        
+        .dia-viernes {
+            background-color: #f8fafc !important;
+        }
+        
+        .dia-viernes .slot {
+            background: repeating-linear-gradient(
+                45deg,
+                #f1f5f9,
+                #f1f5f9 10px,
+                #e2e8f0 10px,
+                #e2e8f0 20px
+            );
+            border-color: #cbd5e1;
+            cursor: not-allowed;
+        }
+        
+        .dia-viernes .slot:hover {
+            border-color: #cbd5e1;
+            box-shadow: none;
+        }
+        
+        .slot .asignatura-codigo {
+            font-size: 1.1rem;
+            font-weight: bold;
+            text-align: center;
+            margin-top: 15px;
+        }
+        
+        .slot .asignatura-hora {
+            font-size: 0.7rem;
+            color: #64748b;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <div class="header-bar">
+        <div class="container">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h1 class="h4 mb-0"><i class="fas fa-calendar-alt me-2"></i>Editor de Horario</h1>
+                    <small id="headerInfo">Cargando información...</small>
+                </div>
+                <div>
+                    <button class="btn btn-light btn-sm me-2" onclick="window.location.href='/dashboard'">
+                        <i class="fas fa-arrow-left me-1"></i> Volver al Dashboard
+                    </button>
+                    <button class="btn btn-warning btn-sm me-2" onclick="generarAutomatico()">
+                        <i class="fas fa-robot me-1"></i> Auto-generar
+                    </button>
+                    <div class="btn-group" role="group">
+                        <button class="btn btn-success btn-sm" onclick="exportarHorario()">
+                            <i class="fas fa-file-code me-1"></i> JSON
+                        </button>
+                        <button class="btn btn-success btn-sm" onclick="exportarExcel()">
+                            <i class="fas fa-file-excel me-1"></i> Excel
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="container-fluid mt-3">
+        <div class="row">
+            <!-- Panel izquierdo -->
+            <div class="col-lg-3">
+                <div class="stats-card">
+                    <h2 class="h6"><i class="fas fa-chart-bar me-2"></i>Estadísticas</h2>
+                    <div class="row text-center">
+                        <div class="col-6">
+                            <div class="fs-4 fw-bold" id="statSlotsOcupados">0</div>
+                            <small class="text-muted">Slots Ocupados</small>
+                        </div>
+                        <div class="col-6">
+                            <div class="fs-4 fw-bold" id="statTotalSlots">0</div>
+                            <small class="text-muted">Total Slots</small>
+                        </div>
+                    </div>
+                    <div class="mt-3">
+                        <div class="progress-container">
+                            <div id="progressBar" class="progress-bar-custom bg-primary" 
+                                 role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
+                            </div>
+                        </div>
+                        <small class="text-muted" id="statPorcentaje">0% completo</small>
+                    </div>
+                </div>
+                
+                <div class="card mb-3">
+                    <div class="card-header bg-primary text-white">
+                        <h2 class="h6 mb-0"><i class="fas fa-book me-2"></i>Asignaturas Disponibles</h2>
+                        <small class="float-end" id="contadorAsignaturas">0 asignaturas</small>
+                    </div>
+                    <div class="card-body card-scroll" id="panelAsignaturas">
+                        <div class="text-center py-4">
+                            <div class="spinner-border text-primary" role="status">
+                                <span class="visually-hidden">Cargando...</span>
+                            </div>
+                            <p class="mt-2 text-muted">Cargando asignaturas...</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="card">
+                    <div class="card-header bg-info text-white">
+                        <h2 class="h6 mb-0"><i class="fas fa-cogs me-2"></i>Acciones Rápidas</h2>
+                    </div>
+                    <div class="card-body">
+                        <div class="d-grid gap-2">
+                            <button class="btn btn-outline-primary" onclick="mostrarTodasSemanas()">
+                                <i class="fas fa-eye me-1"></i> Vista Semestral
+                            </button>
+                            <button class="btn btn-outline-info" onclick="abrirModalFechas()">
+                                <i class="fas fa-calendar-day me-1"></i> Editar Fechas
+                            </button>
+                            <button class="btn btn-outline-danger" onclick="limpiarHorario()">
+                                <i class="fas fa-trash-alt me-1"></i> Limpiar Todo
+                            </button>
+                            <button class="btn btn-outline-success" onclick="guardarCambios()">
+                                <i class="fas fa-save me-1"></i> Guardar Cambios
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="card mt-3">
+                    <div class="card-header bg-warning text-white">
+                        <i class="fas fa-clock me-2"></i>Horarios
+                    </div>
+                    <div class="card-body">
+                        <h6 class="fw-bold">Sección Mañana:</h6>
+                        <div class="small">
+                            <div>1. 08:15 - 09:45</div>
+                            <div>2. 09:50 - 11:20</div>
+                            <div class="text-muted fst-italic">RECESO: 11:20 - 11:35</div>
+                            <div>3. 11:35 - 13:05</div>
+                        </div>
+                        
+                        <hr class="my-2">
+                        
+                        <h6 class="fw-bold mt-3">Restricciones:</h6>
+                        <div class="small">
+                            <div><i class="fas fa-check text-success me-1"></i> Solo turnos mañana</div>
+                            <div><i class="fas fa-times text-danger me-1"></i> Sin viernes</div>
+                            <div><i class="fas fa-times text-danger me-1"></i> Sin semanas examen</div>
+                            <div><i class="fas fa-info-circle text-primary me-1"></i> Máx 2 turnos/semana/asig</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Panel central -->
+            <div class="col-lg-9">
+                <!-- Pestañas de semanas -->
+                <div class="tabs-container mb-3">
+                    <div id="semanasTabs" class="d-flex" role="tablist">
+                        <!-- Dinámico -->
+                    </div>
+                </div>
+                
+                <!-- Horario Grid -->
+                <div class="card">
+                    <div class="card-body">
+                        <div id="gridContainer">
+                            <div class="text-center py-5">
+                                <div class="spinner-border text-primary" role="status">
+                                    <span class="visually-hidden">Cargando...</span>
+                                </div>
+                                <p class="mt-2 text-muted">Cargando horario...</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Modal detalles -->
+    <div class="modal fade" id="detallesModal" tabindex="-1" aria-labelledby="detallesModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h2 class="modal-title" id="detallesModalLabel">Detalles</h2>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+                </div>
+                <div class="modal-body" id="detallesContenido">
+                    <!-- Dinámico -->
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+                    <button type="button" class="btn btn-danger" onclick="limpiarSlotActual()">
+                        <i class="fas fa-trash-alt me-1"></i> Limpiar Slot
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Modal fechas -->
+    <div class="modal fade" id="modalFechaSemana" tabindex="-1" aria-labelledby="modalFechaSemanaLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h2 class="modal-title" id="modalFechaSemanaLabel">Editar Fecha de Semana</h2>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label for="semanaSeleccionada" class="form-label">Semana:</label>
+                        <select id="semanaSeleccionada" class="form-select">
+                            <!-- Dinámico -->
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label for="fechaInicioSemana" class="form-label">Fecha de inicio (Lunes):</label>
+                        <input type="date" id="fechaInicioSemana" class="form-control">
+                    </div>
+                    <div id="infoSemana" class="alert alert-info small">
+                        <!-- Info -->
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="button" class="btn btn-primary" onclick="guardarFechaSemana()">
+                        <i class="fas fa-save me-1"></i> Guardar
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/dragula@3.7.3/dist/dragula.min.js"></script>
+    <script data-horario-id="{{ horario_id }}">
+        // Variables globales
+        let horarioId = parseInt(document.currentScript.getAttribute('data-horario-id') || '0');
+        let horarioData = null;
+        let asignaturasDisponibles = [];
+        let turnos = [];
+        let semanaActual = 1;
+        let dragulaInstance = null;
+        let slotActual = null;
+        
+        // Inicializar
+        document.addEventListener('DOMContentLoaded', async function() {
+            console.log(`🚀 Iniciando editor para horario ID: ${horarioId}`);
+            await cargarHorario();
+            inicializarDragDrop();
+        });
+        
+        // Cargar horario
+        async function cargarHorario() {
+            try {
+                console.log(`🔄 Cargando horario ID: ${horarioId}`);
+                
+                const response = await fetch(`/api/horarios/${horarioId}`);
+                if (!response.ok) throw new Error(`HTTP ${response.status}: Error al cargar`);
+                
+                const data = await response.json();
+                console.log('✅ Horario cargado:', data.horario);
+                
+                horarioData = data.horario;
+                asignaturasDisponibles = data.asignaturas_disponibles || [];
+                turnos = data.turnos || [];
+                
+                // Actualizar header
+                document.getElementById('headerInfo').textContent = 
+                    `${horarioData.año_academico} - Semestre ${horarioData.semestre} - Año ${horarioData.año_carrera}`;
+                
+                // Actualizar estadísticas primero
+                await actualizarEstadisticas();
+                
+                // Generar UI
+                generarTabsSemanas();
+                generarPanelAsignaturas();
+                await cargarSemana(semanaActual);
+                
+                console.log('✅ Horario completamente cargado');
+                
+            } catch (error) {
+                console.error('❌ Error cargando horario:', error);
+                mostrarNotificacion('error', '❌ Error al cargar el horario. Recargando...');
+                setTimeout(() => location.reload(), 2000);
+            }
+        }
+        
+        // Actualizar estadísticas
+        async function actualizarEstadisticas() {
+            try {
+                console.log(`📊 Actualizando estadísticas para horario ${horarioId}...`);
+                
+                // Opción 1: Usar la ruta de estadísticas
+                const response = await fetch(`/api/horarios/${horarioId}/estadisticas`);
+                
+                if (!response.ok) {
+                    console.warn('❌ Ruta de estadísticas no disponible, usando cálculo local...');
+                    // Opción 2: Calcular localmente
+                    await calcularEstadisticasLocales();
+                    return;
+                }
+                
+                const data = await response.json();
+                console.log('📈 Estadísticas recibidas:', data);
+                
+                // Actualizar UI
+                document.getElementById('statSlotsOcupados').textContent = data.slots_ocupados || 0;
+                document.getElementById('statTotalSlots').textContent = data.total_slots || 0;
+                
+                const porcentaje = data.porcentaje_ocupado || 0;
+                document.getElementById('statPorcentaje').textContent = `${porcentaje.toFixed(1)}% completo`;
+                
+                const progressBar = document.getElementById('progressBar');
+                progressBar.style.width = `${porcentaje}%`;
+                progressBar.className = `progress-bar-custom ${porcentaje > 80 ? 'bg-success' : porcentaje > 50 ? 'bg-warning' : 'bg-primary'}`;
+                progressBar.setAttribute('aria-valuenow', porcentaje);
+                
+            } catch (error) {
+                console.error('❌ Error al cargar estadísticas:', error);
+                // Intentar cálculo local como respaldo
+                await calcularEstadisticasLocales();
+            }
+        }
+        
+        // Función de respaldo: calcular estadísticas localmente
+        async function calcularEstadisticasLocales() {
+            try {
+                const response = await fetch(`/api/horarios/${horarioId}`);
+                const data = await response.json();
+                
+                // Calcular slots totales (22 semanas * 5 días * 6 turnos)
+                const totalSlots = 22 * 5 * 6;
+                // Contar asignaciones existentes
+                const slotsOcupados = data.asignaciones ? data.asignaciones.filter(a => a.asignatura_id).length : 0;
+                const porcentaje = totalSlots > 0 ? ((slotsOcupados / totalSlots) * 100).toFixed(1) : 0;
+                
+                document.getElementById('statSlotsOcupados').textContent = slotsOcupados;
+                document.getElementById('statTotalSlots').textContent = totalSlots;
+                document.getElementById('statPorcentaje').textContent = `${porcentaje}% completo`;
+                
+                const progressBar = document.getElementById('progressBar');
+                progressBar.style.width = `${porcentaje}%`;
+                progressBar.className = `progress-bar-custom ${porcentaje > 80 ? 'bg-success' : porcentaje > 50 ? 'bg-warning' : 'bg-primary'}`;
+                progressBar.setAttribute('aria-valuenow', porcentaje);
+                
+                console.log(`📊 Estadísticas locales: ${slotsOcupados}/${totalSlots} slots (${porcentaje}%)`);
+                
+            } catch (error) {
+                console.error('❌ Error en cálculo local:', error);
+                mostrarNotificacion('error', '❌ Error al cargar estadísticas');
+            }
+        }
+        
+        // Generar pestañas
+        function generarTabsSemanas() {
+            const semanasTabs = document.getElementById('semanasTabs');
+            semanasTabs.innerHTML = '';
+            
+            const totalSemanas = horarioData.semanas_totales;
+            const semanasExamenes = horarioData.semanas_examenes;
+            
+            for (let i = 1; i <= totalSemanas; i++) {
+                const esExamen = i > totalSemanas - semanasExamenes;
+                const tab = document.createElement('button');
+                tab.className = `semana-tab ${esExamen ? 'examen' : ''} ${i === semanaActual ? 'active' : ''}`;
+                tab.textContent = esExamen ? `Examen ${i - (totalSemanas - semanasExamenes)}` : `Semana ${i}`;
+                tab.dataset.semana = i;
+                tab.setAttribute('role', 'tab');
+                tab.setAttribute('aria-selected', i === semanaActual ? 'true' : 'false');
+                tab.setAttribute('aria-controls', `semana-${i}`);
+                
+                tab.addEventListener('click', () => {
+                    document.querySelectorAll('.semana-tab').forEach(t => {
+                        t.classList.remove('active');
+                        t.setAttribute('aria-selected', 'false');
+                    });
+                    tab.classList.add('active');
+                    tab.setAttribute('aria-selected', 'true');
+                    semanaActual = i;
+                    cargarSemana(i);
+                });
+                
+                semanasTabs.appendChild(tab);
+            }
+        }
+        
+        // Generar panel asignaturas
+        function generarPanelAsignaturas() {
+            const panel = document.getElementById('panelAsignaturas');
+            const contador = document.getElementById('contadorAsignaturas');
+            
+            if (asignaturasDisponibles.length === 0) {
+                panel.innerHTML = '<div class="alert alert-warning">No hay asignaturas disponibles</div>';
+                contador.textContent = '0 asignaturas';
+                return;
+            }
+            
+            panel.innerHTML = '';
+            asignaturasDisponibles.forEach(asig => {
+                const item = document.createElement('div');
+                item.className = 'asignatura-item';
+                item.style.backgroundColor = asig.color || '#3498db';
+                item.dataset.asignaturaId = asig.id;
+                item.dataset.turnosMaximos = asig.turnos_maximos;
+                item.setAttribute('draggable', 'true');
+                
+                item.innerHTML = `
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div>
+                            <strong>${asig.codigo}</strong>
+                            <div class="small">${asig.nombre}</div>
+                        </div>
+                        <span class="badge bg-dark">${asig.horas_presenciales}h</span>
+                    </div>
+                    ${asig.profesor_nombre ? `<div class="small mt-1"><i class="fas fa-user-tie me-1"></i>${asig.profesor_nombre}</div>` : ''}
+                    <div class="small mt-1"><i class="fas fa-clock me-1"></i>Máx: ${asig.turnos_maximos} turnos/semana</div>
+                `;
+                
+                panel.appendChild(item);
+            });
+            
+            contador.textContent = `${asignaturasDisponibles.length} asignaturas`;
+        }
+        
+        // Cargar semana específica
+        function cargarSemana(semanaNumero) {
+            const gridContainer = document.getElementById('gridContainer');
+            
+            let html = `
+                <div class="table-responsive" id="semana-${semanaNumero}" role="tabpanel">
+                    <table class="table table-bordered table-hover">
+                        <thead>
+                            <tr>
+                                <th scope="col" style="width: 150px;">Turno / Día</th>
+            `;
+            
+            const dias = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes'];
+            dias.forEach((dia, index) => {
+                html += `<th scope="col" class="text-center ${index === 4 ? 'dia-viernes' : ''}" 
+                            id="fecha-${semanaNumero}-${index}">
+                            ${dia}<br>
+                            <small class="fecha-display text-muted" id="fecha-texto-${semanaNumero}-${index}">--/--</small>
+                        </th>`;
+            });
+            
+            html += `</tr></thead><tbody>`;
+            
+            turnos.forEach(turno => {
+                html += `<tr>`;
+                html += `<th scope="row" class="turno-header">
+                    <div>${turno.nombre}</div>
+                    <div class="hora-display">${turno.hora_inicio} - ${turno.hora_fin}</div>
+                </th>`;
+                
+                for (let dia = 0; dia < 5; dia++) {
+                    const slotId = `slot-${semanaNumero}-${dia}-${turno.id}`;
+                    const esViernes = dia === 4;
+                    
+                    html += `<td id="${slotId}" class="slot-container ${esViernes ? 'dia-viernes' : ''}">
+                        <div class="slot ${esViernes ? 'slot-vacio' : ''}" 
+                             data-semana="${semanaNumero}" 
+                             data-dia="${dia}" 
+                             data-turno="${turno.id}"
+                             onclick="${!esViernes ? 'mostrarDetallesSlot(this)' : ''}" 
+                             role="button" 
+                             tabindex="${esViernes ? '-1' : '0'}">
+                            <div class="text-center text-muted">
+                                ${esViernes ? '<i class="fas fa-lock"></i><br><small>No disponible</small>' : 
+                                  '<i class="fas fa-plus"></i><br><small>Arrastrar aquí</small>'}
+                            </div>
+                        </div>
+                    </td>`;
+                }
+                
+                html += `</tr>`;
+            });
+            
+            html += `</tbody></table></div>`;
+            gridContainer.innerHTML = html;
+            
+            cargarDatosSlots(semanaNumero);
+            
+            setTimeout(() => {
+                inicializarDragDrop();
+            }, 100);
+        }
+        
+        // Cargar datos slots
+        async function cargarDatosSlots(semanaNumero) {
+            try {
+                const response = await fetch(`/api/horarios/${horarioId}`);
+                const data = await response.json();
+                
+                const asignacionesSemana = data.asignaciones.filter(a => a.semana_numero == semanaNumero);
+                const fechasPorDia = {};
+                
+                asignacionesSemana.forEach(asignacion => {
+                    const slotId = `slot-${asignacion.semana_numero}-${asignacion.dia_semana}-${asignacion.turno_id}`;
+                    const slotElement = document.getElementById(slotId);
+                    if (!slotElement) return;
+                    
+                    const slotDiv = slotElement.querySelector('.slot');
+                    actualizarSlotUI(slotDiv, asignacion);
+                    
+                    if (!fechasPorDia[asignacion.dia_semana] && asignacion.fecha_especifica) {
+                        fechasPorDia[asignacion.dia_semana] = asignacion.fecha_especifica.split('T')[0];
+                    }
+                });
+                
+                // Actualizar fechas en encabezados
+                const dias = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes'];
+                for (let dia = 0; dia < 5; dia++) {
+                    const fechaElement = document.getElementById(`fecha-texto-${semanaNumero}-${dia}`);
+                    if (fechaElement) {
+                        if (fechasPorDia[dia]) {
+                            const fecha = new Date(fechasPorDia[dia]);
+                            const fechaFormateada = fecha.toLocaleDateString('es-ES', {
+                                day: '2-digit',
+                                month: '2-digit',
+                                year: 'numeric'
+                            });
+                            fechaElement.textContent = fechaFormateada;
+                            fechaElement.classList.remove('text-muted');
+                            fechaElement.classList.add('text-primary', 'fw-bold');
+                        } else if (horarioData.fecha_inicio) {
+                            const fechaInicio = new Date(horarioData.fecha_inicio);
+                            const diasASumar = (semanaNumero - 1) * 7 + dia;
+                            const fechaCalculada = new Date(fechaInicio);
+                            fechaCalculada.setDate(fechaInicio.getDate() + diasASumar);
+                            const fechaFormateada = fechaCalculada.toLocaleDateString('es-ES', {
+                                day: '2-digit',
+                                month: '2-digit'
+                            });
+                            fechaElement.textContent = fechaFormateada;
+                        }
+                    }
+                }
+                
+                // Actualizar estadísticas después de cargar datos
+                await actualizarEstadisticas();
+                
+            } catch (error) {
+                console.error('Error al cargar slots:', error);
+            }
+        }
+        
+        // Actualizar UI slot
+        function actualizarSlotUI(slotElement, asignacion) {
+            const esViernes = asignacion.dia_semana === 4;
+            
+            if (asignacion.asignatura_id && asignacion.asignatura_codigo && !esViernes) {
+                slotElement.className = 'slot ocupado';
+                slotElement.style.borderColor = asignacion.color;
+                slotElement.style.backgroundColor = asignacion.color + '20';
+                slotElement.style.borderLeftColor = asignacion.color;
+                
+                slotElement.innerHTML = `
+                    <div class="slot-content text-center">
+                        <div class="asignatura-codigo" style="color: ${asignacion.color}">
+                            ${asignacion.asignatura_codigo || '?'}
+                        </div>
+                        <div class="asignatura-hora">
+                            ${asignacion.hora_inicio || ''}
+                        </div>
+                    </div>
+                `;
+            } else if (!esViernes) {
+                slotElement.className = 'slot';
+                slotElement.style.cssText = '';
+                slotElement.innerHTML = '<div class="text-center text-muted"><i class="fas fa-plus"></i><br><small>Arrastrar aquí</small></div>';
+            }
+            
+            if (asignacion.es_examen) {
+                slotElement.classList.add('slot-examen');
+                if (!asignacion.asignatura_id) {
+                    slotElement.innerHTML = '<div class="text-center"><i class="fas fa-file-alt"></i><br><small>EXAMEN</small></div>';
+                }
+            }
+            
+            slotElement.dataset.asignacion = JSON.stringify(asignacion);
+        }
+        
+        // Inicializar drag & drop
+        function inicializarDragDrop() {
+            if (dragulaInstance) {
+                dragulaInstance.destroy();
+            }
+            
+            const containers = [];
+            const panelAsignaturas = document.getElementById('panelAsignaturas');
+            if (panelAsignaturas) containers.push(panelAsignaturas);
+            
+            document.querySelectorAll('.slot:not(.slot-vacio)').forEach(slot => {
+                containers.push(slot);
+            });
+            
+            dragulaInstance = dragula(containers, {
+                copy: function (el, source) {
+                    return source === panelAsignaturas;
+                },
+                copySortSource: false,
+                accepts: function (el, target, source, sibling) {
+                    return target.classList.contains('slot') && !target.classList.contains('slot-vacio');
+                },
+                moves: function (el, source, handle, sibling) {
+                    return true;
+                },
+                revertOnSpill: true,
+                removeOnSpill: false
+            });
+            
+            dragulaInstance.on('drop', async function(el, target, source, sibling) {
+                if (source === panelAsignaturas && target.classList.contains('slot')) {
+                    const asignaturaId = el.dataset.asignaturaId;
+                    const slotData = JSON.parse(target.dataset.asignacion || '{}');
+                    
+                    const data = {
+                        semana_numero: slotData.semana_numero || semanaActual,
+                        dia_semana: slotData.dia_semana || parseInt(target.dataset.dia),
+                        turno_id: slotData.turno_id || parseInt(target.dataset.turno),
+                        asignatura_id: parseInt(asignaturaId)
+                    };
+                    
+                    try {
+                        const response = await fetch(`/api/horarios/${horarioId}/asignar`, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify(data)
+                        });
+                        
+                        const result = await response.json();
+                        
+                        if (result.success) {
+                            actualizarSlotUI(target, result.slot);
+                            actualizarEstadisticas();
+                            mostrarNotificacion('success', '✅ Asignatura asignada');
+                        } else {
+                            mostrarNotificacion('error', `❌ ${result.error || result.message}`);
+                            target.innerHTML = '<div class="text-center text-muted"><i class="fas fa-plus"></i><br><small>Arrastrar aquí</small></div>';
+                        }
+                    } catch (error) {
+                        console.error('Error:', error);
+                        mostrarNotificacion('error', '❌ Error de conexión');
+                        target.innerHTML = '<div class="text-center text-muted"><i class="fas fa-plus"></i><br><small>Arrastrar aquí</small></div>';
+                    }
+                } else if (el.classList.contains('slot') && target.classList.contains('slot')) {
+                    const slotOrigen = JSON.parse(el.dataset.asignacion || '{}');
+                    const slotDestino = JSON.parse(target.dataset.asignacion || '{}');
+                    
+                    if (!slotOrigen.asignatura_id) return;
+                    
+                    try {
+                        await fetch(`/api/horarios/${horarioId}/asignar`, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({
+                                semana_numero: slotOrigen.semana_numero,
+                                dia_semana: slotOrigen.dia_semana,
+                                turno_id: slotOrigen.turno_id,
+                                asignatura_id: null
+                            })
+                        });
+                        
+                        const response = await fetch(`/api/horarios/${horarioId}/asignar`, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({
+                                semana_numero: slotDestino.semana_numero,
+                                dia_semana: slotDestino.dia_semana,
+                                turno_id: slotDestino.turno_id,
+                                asignatura_id: slotOrigen.asignatura_id
+                            })
+                        });
+                        
+                        const result = await response.json();
+                        
+                        if (result.success) {
+                            actualizarSlotUI(el, { ...slotOrigen, asignatura_id: null });
+                            actualizarSlotUI(target, result.slot);
+                            actualizarEstadisticas();
+                            mostrarNotificacion('success', '✅ Asignación movida');
+                        } else {
+                            await fetch(`/api/horarios/${horarioId}/asignar`, {
+                                method: 'POST',
+                                headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify({
+                                    semana_numero: slotOrigen.semana_numero,
+                                    dia_semana: slotOrigen.dia_semana,
+                                    turno_id: slotOrigen.turno_id,
+                                    asignatura_id: slotOrigen.asignatura_id
+                                })
+                            });
+                            mostrarNotificacion('error', `❌ ${result.error || result.message}`);
+                        }
+                    } catch (error) {
+                        console.error('Error:', error);
+                        mostrarNotificacion('error', '❌ Error de conexión');
+                    }
+                } else if (el.classList.contains('slot') && target === panelAsignaturas) {
+                    const slotData = JSON.parse(el.dataset.asignacion || '{}');
+                    
+                    if (!slotData.asignatura_id) return;
+                    
+                    try {
+                        const response = await fetch(`/api/horarios/${horarioId}/limpiar-slot`, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({
+                                semana_numero: slotData.semana_numero,
+                                dia_semana: slotData.dia_semana,
+                                turno_id: slotData.turno_id
+                            })
+                        });
+                        
+                        const result = await response.json();
+                        
+                        if (result.success) {
+                            actualizarSlotUI(el, { ...slotData, asignatura_id: null });
+                            actualizarEstadisticas();
+                            mostrarNotificacion('success', '✅ Asignación eliminada');
+                        }
+                    } catch (error) {
+                        console.error('Error:', error);
+                    }
+                }
+            });
+            
+            dragulaInstance.on('drag', function(el, source) {
+                el.classList.add('gu-transit');
+            });
+            
+            dragulaInstance.on('cancel', function(el, container, source) {
+                el.classList.remove('gu-transit');
+            });
+        }
+        
+        // Mostrar detalles slot
+        function mostrarDetallesSlot(slotElement) {
+            slotActual = slotElement;
+            const asignacion = JSON.parse(slotElement.dataset.asignacion || '{}');
+            const dias = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes'];
+            const diaNombre = dias[asignacion.dia_semana];
+            
+            const modal = new bootstrap.Modal(document.getElementById('detallesModal'));
+            let contenido = '';
+            
+            if (asignacion.asignatura_id) {
+                contenido = `
+                    <div class="mb-3">
+                        <h3 class="h6">${asignacion.asignatura_nombre || 'Sin nombre'}</h3>
+                        <div class="row">
+                            <div class="col-6">
+                                <strong>Código:</strong><br>
+                                ${asignacion.asignatura_codigo || 'N/A'}
+                            </div>
+                            <div class="col-6">
+                                <strong>Color:</strong><br>
+                                <span class="color-badge" style="background-color: ${asignacion.color}"></span>
+                                <span class="ms-2">${asignacion.color}</span>
+                            </div>
+                        </div>
+                        <div class="mt-2">
+                            <strong>Profesor:</strong><br>
+                            ${asignacion.profesor_nombre || 'No asignado'}
+                        </div>
+                        <div class="mt-2">
+                            <strong>Horario:</strong><br>
+                            Semana ${asignacion.semana_numero}, ${diaNombre}<br>
+                            ${asignacion.hora_inicio} - ${asignacion.hora_fin}
+                        </div>
+                        ${asignacion.es_examen ? '<div class="alert alert-warning mt-2"><i class="fas fa-exclamation-triangle"></i> Semana de exámenes</div>' : ''}
+                    </div>
+                `;
+            } else {
+                contenido = `
+                    <div class="text-center py-3">
+                        <i class="fas fa-calendar-times fa-3x text-muted mb-3"></i>
+                        <h3 class="h5">Slot Vacío</h3>
+                        <p class="text-muted">No hay asignatura asignada</p>
+                        <div class="mt-3">
+                            <strong>Disponible para:</strong><br>
+                            Semana ${asignacion.semana_numero || semanaActual}, 
+                            ${diaNombre}<br>
+                            ${asignacion.hora_inicio || '--:--'} - ${asignacion.hora_fin || '--:--'}
+                        </div>
+                    </div>
+                `;
+            }
+            
+            document.getElementById('detallesContenido').innerHTML = contenido;
+            document.getElementById('detallesModalLabel').textContent = 
+                asignacion.asignatura_id ? 'Detalles de Asignación' : 'Slot Vacío';
+            modal.show();
+        }
+        
+        // Limpiar slot actual
+        async function limpiarSlotActual() {
+            if (!slotActual) return;
+            
+            const asignacion = JSON.parse(slotActual.dataset.asignacion || '{}');
+            
+            try {
+                const response = await fetch(`/api/horarios/${horarioId}/limpiar-slot`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        semana_numero: asignacion.semana_numero,
+                        dia_semana: asignacion.dia_semana,
+                        turno_id: asignacion.turno_id
+                    })
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    actualizarSlotUI(slotActual, { ...asignacion, asignatura_id: null });
+                    actualizarEstadisticas();
+                    bootstrap.Modal.getInstance(document.getElementById('detallesModal')).hide();
+                    mostrarNotificacion('success', '✅ Slot limpiado');
+                } else {
+                    mostrarNotificacion('error', '❌ Error al limpiar');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                mostrarNotificacion('error', '❌ Error de conexión');
+            }
+        }
+        
+        // Generar automático
+        async function generarAutomatico() {
+            if (!confirm('¿Generar horario automáticamente? Esto reemplazará las asignaciones actuales en mañanas (Lun-Jue).')) {
+                return;
+            }
+            
+            try {
+                const response = await fetch(`/api/horarios/${horarioId}/generar-automatico`, {
+                    method: 'POST'
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    mostrarNotificacion('success', result.message);
+                    console.log('Estadísticas:', result.estadisticas_detalladas);
+                    cargarSemana(semanaActual);
+                } else {
+                    mostrarNotificacion('error', result.error || 'Error al generar');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                mostrarNotificacion('error', '❌ Error de conexión');
+            }
+        }
+        
+        // Limpiar horario
+        async function limpiarHorario() {
+            if (!confirm('¿Está seguro de limpiar todo el horario?')) {
+                return;
+            }
+            
+            try {
+                const response = await fetch(`/api/horarios/${horarioId}/limpiar-todo`, {
+                    method: 'POST'
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    mostrarNotificacion('success', '✅ Horario limpiado');
+                    cargarSemana(semanaActual);
+                } else {
+                    mostrarNotificacion('error', '❌ Error al limpiar');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                mostrarNotificacion('error', '❌ Error de conexión');
+            }
+        }
+        
+        // Exportar JSON
+        async function exportarHorario() {
+            try {
+                const response = await fetch(`/api/horarios/${horarioId}/exportar`);
+                const data = await response.json();
+                
+                const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+                const url = window.URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `horario-${horarioData.año_academico}.json`;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                window.URL.revokeObjectURL(url);
+                
+                mostrarNotificacion('success', '✅ JSON exportado');
+            } catch (error) {
+                console.error('Error:', error);
+                mostrarNotificacion('error', '❌ Error al exportar');
+            }
+        }
+        
+        // Exportar Excel
+        async function exportarExcel() {
+            try {
+                const response = await fetch(`/api/horarios/${horarioId}/exportar-excel`);
+                
+                if (!response.ok) throw new Error('Error al exportar');
+                
+                const blob = await response.blob();
+                const url = window.URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `horario-${horarioData.año_academico}.xlsx`;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                window.URL.revokeObjectURL(url);
+                
+                mostrarNotificacion('success', '✅ Excel exportado');
+            } catch (error) {
+                console.error('Error:', error);
+                mostrarNotificacion('error', '❌ Error al exportar');
+            }
+        }
+        
+        // Mostrar vista semestral con formato de tabla
+        async function mostrarTodasSemanas() {
+            try {
+                const response = await fetch(`/api/horarios/${horarioId}/vista-semestral-detallada`);
+                const data = await response.json();
+                
+                if (!data.success) {
+                    throw new Error('Error al cargar vista semestral');
+                }
+                
+                // Crear modal para vista semestral
+                const modalHtml = `
+                    <div class="modal fade" id="modalVistaSemestral" tabindex="-1" aria-labelledby="modalVistaSemestralLabel" aria-hidden="true">
+                        <div class="modal-dialog modal-fullscreen">
+                            <div class="modal-content">
+                                <div class="modal-header bg-primary text-white">
+                                    <h2 class="modal-title" id="modalVistaSemestralLabel">
+                                        <i class="fas fa-calendar-alt me-2"></i>Vista Semestral Completa
+                                    </h2>
+                                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+                                </div>
+                                <div class="modal-body" style="background-color: #f8f9fa; overflow-y: auto;">
+                                    <div class="container-fluid" id="contenedorVistaSemestral">
+                                        <!-- Las tablas se generarán aquí dinámicamente -->
+                                    </div>
+                                </div>
+                                <div class="modal-footer">
+                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                                        <i class="fas fa-times me-1"></i> Cerrar
+                                    </button>
+                                    <button type="button" class="btn btn-primary" onclick="imprimirVistaSemestral()">
+                                        <i class="fas fa-print me-1"></i> Imprimir
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                
+                // Agregar modal al DOM
+                const modalContainer = document.createElement('div');
+                modalContainer.innerHTML = modalHtml;
+                document.body.appendChild(modalContainer);
+                
+                // Generar las tablas
+                const contenedor = document.getElementById('contenedorVistaSemestral');
+                contenedor.innerHTML = '';
+                
+                data.semanas.forEach(semana => {
+                    const semanaHtml = crearTablaSemana(semana, data.horario);
+                    contenedor.innerHTML += semanaHtml;
+                });
+                
+                // Mostrar modal
+                const modal = new bootstrap.Modal(document.getElementById('modalVistaSemestral'));
+                modal.show();
+                
+                // Limpiar cuando se cierre
+                document.getElementById('modalVistaSemestral').addEventListener('hidden.bs.modal', function() {
+                    modalContainer.remove();
+                });
+                
+            } catch (error) {
+                console.error('Error:', error);
+                mostrarNotificacion('error', '❌ Error al cargar vista semestral');
+            }
+        }
+        
+        // Crear tabla para una semana específica
+        function crearTablaSemana(semana, horarioInfo) {
+            const esExamen = semana.es_examen;
+            const tituloClase = esExamen ? 'border-warning bg-warning-subtle' : 'border-primary bg-light';
+            
+            let html = `
+                <div class="card mb-4 ${tituloClase}">
+                    <div class="card-header ${esExamen ? 'bg-warning text-dark' : 'bg-primary text-white'}">
+                        <h5 class="mb-0">
+                            <i class="fas fa-calendar-week me-2"></i>
+                            ${esExamen ? '📝 ' : '📚 '}
+                            Semana ${semana.numero}: ${semana.rango_fechas}
+                            ${esExamen ? '<span class="badge bg-dark ms-2">EXÁMENES</span>' : ''}
+                        </h5>
+                    </div>
+                    <div class="card-body p-0">
+                        <div class="table-responsive">
+                            <table class="table table-bordered table-sm mb-0" style="font-size: 0.85rem;">
+                                <thead>
+                                    <tr>
+                                        <th style="width: 120px; background-color: #e9ecef; text-align: center;">TURNO / DÍA</th>
+                                        <th style="background-color: #f8d7da; text-align: center;">LUNES</th>
+                                        <th style="background-color: #d1ecf1; text-align: center;">MARTES</th>
+                                        <th style="background-color: #d4edda; text-align: center;">MIÉRCOLES</th>
+                                        <th style="background-color: #fff3cd; text-align: center;">JUEVES</th>
+                                        <th style="background-color: #e2e3e5; text-align: center;">VIERNES</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+            `;
+            
+            // Procesar turnos
+            let turnoAnteriorSeccion = '';
+            
+            semana.turnos.forEach(turno => {
+                // Agregar fila de receso si cambiamos de sección
+                if (turnoAnteriorSeccion && turnoAnteriorSeccion !== turno.seccion) {
+                    html += `
+                        <tr style="background-color: #f8f9fa;">
+                            <td colspan="6" class="text-center py-1" style="font-weight: bold; color: #6c757d;">
+                                <i class="fas fa-clock me-1"></i> RECESO
+                            </td>
+                        </tr>
+                    `;
+                }
+                
+                turnoAnteriorSeccion = turno.seccion;
+                
+                const claseSeccion = turno.seccion === 'mañana' ? 'table-info' : 'table-warning';
+                
+                html += `
+                    <tr class="${claseSeccion}">
+                        <td style="font-weight: bold; text-align: center; background-color: ${turno.seccion === 'mañana' ? '#d1ecf1' : '#fff3cd'};">
+                            ${turno.hora_inicio}-${turno.hora_fin}<br>
+                            <small>${turno.nombre}</small>
+                        </td>
+                `;
+                
+                // Días de la semana
+                const dias = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes'];
+                
+                dias.forEach(dia => {
+                    const slot = turno.dias[dia];
+                    const esViernes = dia === 'Viernes';
+                    const esExamenSemana = semana.es_examen;
+                    
+                    let slotHtml = '';
+                    let claseCelda = '';
+                    let estiloCelda = '';
+                    
+                    if (slot.ocupado) {
+                        // Slot ocupado con asignatura
+                        const colorClaro = slot.color ? `${slot.color}20` : '#e3f2fd';
+                        estiloCelda = `background-color: ${colorClaro}; border-left: 4px solid ${slot.color || '#007bff'};`;
+                        
+                        slotHtml = `
+                            <div class="text-center py-1" title="${slot.nombre} - ${slot.profesor || 'Sin profesor'}">
+                                <strong style="color: ${slot.color || '#007bff'}; font-size: 1rem;">${slot.codigo}</strong>
+                                <br>
+                                <small class="text-muted">${turno.hora_inicio}</small>
+                            </div>
+                        `;
+                        
+                        claseCelda = 'slot-ocupado';
+                        
+                    } else if (esViernes) {
+                        // Viernes vacío
+                        slotHtml = `
+                            <div class="text-center py-3" style="color: #adb5bd;">
+                                <i class="fas fa-lock"></i><br>
+                                <small>NO DISPONIBLE</small>
+                            </div>
+                        `;
+                        estiloCelda = 'background-color: #f8f9fa;';
+                        claseCelda = 'slot-viernes';
+                        
+                    } else if (esExamenSemana) {
+                        // Semana de exámenes
+                        slotHtml = `
+                            <div class="text-center py-3" style="color: #856404;">
+                                <i class="fas fa-file-alt"></i><br>
+                                <small>EXAMEN</small>
+                            </div>
+                        `;
+                        estiloCelda = 'background-color: #fff3cd;';
+                        claseCelda = 'slot-examen';
+                        
+                    } else {
+                        // Slot vacío normal (arrastrable)
+                        slotHtml = `
+                            <div class="text-center py-3" style="color: #6c757d; cursor: pointer;">
+                                <i class="fas fa-plus"></i><br>
+                                <small>ARR&Aacute;STRAME</small>
+                            </div>
+                        `;
+                        estiloCelda = 'background-color: white; cursor: move;';
+                        claseCelda = 'slot-vacio';
+                    }
+                    
+                    html += `
+                        <td class="${claseCelda}" style="${estiloCelda} min-height: 80px; vertical-align: middle;"
+                            data-semana="${semana.numero}"
+                            data-dia="${dias.indexOf(dia)}"
+                            data-turno="${turno.id}"
+                            data-ocupado="${slot.ocupado}"
+                            data-es-viernes="${esViernes}"
+                            data-es-examen="${esExamenSemana}"
+                            onclick="manejarClickSlotVistaSemestral(this)">
+                            ${slotHtml}
+                        </td>
+                    `;
+                });
+                
+                html += `</tr>`;
+            });
+            
+            html += `
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                    <div class="card-footer ${esExamen ? 'bg-warning-subtle' : 'bg-light'}">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <small class="text-muted">
+                                    <i class="fas fa-info-circle me-1"></i>
+                                    Slots disponibles: ${contarSlotsDisponibles(semana)}
+                                </small>
+                            </div>
+                            <div class="col-md-6 text-end">
+                                <small class="text-muted">
+                                    ${esExamen ? '📝 Semana de exámenes' : '📚 Semana de clases'}
+                                </small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            return html;
+        }
+        
+        // Contar slots disponibles en una semana
+        function contarSlotsDisponibles(semana) {
+            let disponibles = 0;
+            
+            semana.turnos.forEach(turno => {
+                const dias = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes'];
+                
+                dias.forEach(dia => {
+                    const slot = turno.dias[dia];
+                    if (!slot.ocupado && !slot.es_viernes && !semana.es_examen) {
+                        disponibles++;
+                    }
+                });
+            });
+            
+            return disponibles;
+        }
+        
+        // Manejar click en slot de vista semestral
+        function manejarClickSlotVistaSemestral(slotElement) {
+            const semanaNumero = slotElement.dataset.semana;
+            const diaSemana = slotElement.dataset.dia;
+            const turnoId = slotElement.dataset.turno;
+            const ocupado = slotElement.dataset.ocupado === 'true';
+            const esViernes = slotElement.dataset.esViernes === 'true';
+            const esExamen = slotElement.dataset.esExamen === 'true';
+            
+            const dias = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes'];
+            const diaNombre = dias[parseInt(diaSemana)];
+            
+            if (ocupado) {
+                // Mostrar detalles de la asignatura
+                const contenido = slotElement.innerHTML;
+                const modalHtml = `
+                    <div class="modal fade" id="modalDetallesSlot" tabindex="-1">
+                        <div class="modal-dialog">
+                            <div class="modal-content">
+                                <div class="modal-header">
+                                    <h5 class="modal-title">Detalles de Asignación</h5>
+                                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                                </div>
+                                <div class="modal-body">
+                                    <div class="alert alert-info">
+                                        <i class="fas fa-info-circle me-2"></i>
+                                        Semana ${semanaNumero}, ${diaNombre}<br>
+                                        <small>Slot ocupado - Doble click para más detalles</small>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                
+                const modalContainer = document.createElement('div');
+                modalContainer.innerHTML = modalHtml;
+                document.body.appendChild(modalContainer);
+                
+                const modal = new bootstrap.Modal(document.getElementById('modalDetallesSlot'));
+                modal.show();
+                
+                modalContainer.addEventListener('hidden.bs.modal', function() {
+                    modalContainer.remove();
+                });
+                
+            } else if (!esViernes && !esExamen) {
+                // Slot vacío - mostrar opciones
+                mostrarNotificacion('info', `Slot disponible: Semana ${semanaNumero}, ${diaNombre}`);
+            }
+        }
+        
+        // Función para imprimir vista semestral
+        function imprimirVistaSemestral() {
+            const contenido = document.getElementById('contenedorVistaSemestral').innerHTML;
+            const titulo = `Vista Semestral - ${horarioData.año_academico} - Semestre ${horarioData.semestre}`;
+            
+            const ventanaImpresion = window.open('', '_blank');
+            ventanaImpresion.document.write(`
+                <!DOCTYPE html>
+                <html>
+                <head>
+                    <title>${titulo}</title>
+                    <style>
+                        body { font-family: Arial, sans-serif; margin: 20px; }
+                        .card { margin-bottom: 20px; border: 1px solid #ccc; }
+                        .card-header { background-color: #f8f9fa; padding: 10px; font-weight: bold; }
+                        table { width: 100%; border-collapse: collapse; font-size: 12px; }
+                        th, td { border: 1px solid #ddd; padding: 8px; text-align: center; }
+                        th { background-color: #f2f2f2; }
+                        .slot-ocupado { background-color: #e7f3ff; }
+                        .slot-viernes { background-color: #f8f9fa; }
+                        .slot-examen { background-color: #fff3cd; }
+                        @media print {
+                            .no-print { display: none; }
+                        }
+                    </style>
+                </head>
+                <body>
+                    <h1>${titulo}</h1>
+                    <p>Generado el ${new Date().toLocaleDateString('es-ES')}</p>
+                    <hr>
+                    ${contenido}
+                    <div class="no-print" style="margin-top: 20px;">
+                        <button onclick="window.print()" style="padding: 10px 20px; background-color: #007bff; color: white; border: none; cursor: pointer;">
+                            Imprimir
+                        </button>
+                        <button onclick="window.close()" style="padding: 10px 20px; background-color: #6c757d; color: white; border: none; cursor: pointer;">
+                            Cerrar
+                        </button>
+                    </div>
+                </body>
+                </html>
+            `);
+            ventanaImpresion.document.close();
+        }
+        
+        // Guardar cambios
+        function guardarCambios() {
+            mostrarNotificacion('success', '✅ Los cambios se guardan automáticamente');
+        }
+        
+        // Abrir modal fechas
+        function abrirModalFechas() {
+            const modal = new bootstrap.Modal(document.getElementById('modalFechaSemana'));
+            
+            const selectSemana = document.getElementById('semanaSeleccionada');
+            selectSemana.innerHTML = '';
+            
+            for (let i = 1; i <= horarioData.semanas_totales; i++) {
+                const option = document.createElement('option');
+                option.value = i;
+                option.textContent = i <= horarioData.semanas_clases ? `Semana ${i} (Clases)` : `Semana ${i} (Exámenes)`;
+                selectSemana.appendChild(option);
+            }
+            
+            selectSemana.addEventListener('change', function() {
+                cargarFechaSemana(this.value);
+            });
+            
+            cargarFechaSemana(1);
+            modal.show();
+        }
+        
+        // Cargar fecha semana
+        async function cargarFechaSemana(semanaNumero) {
+            try {
+                const response = await fetch(`/api/horarios/${horarioId}`);
+                const data = await response.json();
+                
+                const asignaciones = data.asignaciones;
+                const slotSemana = asignaciones.find(a => a.semana_numero == semanaNumero && a.dia_semana == 0);
+                
+                if (slotSemana && slotSemana.fecha_especifica) {
+                    document.getElementById('fechaInicioSemana').value = slotSemana.fecha_especifica.split('T')[0];
+                } else if (horarioData.fecha_inicio) {
+                    const fechaInicio = new Date(horarioData.fecha_inicio);
+                    const diasASumar = (semanaNumero - 1) * 7;
+                    const fechaCalculada = new Date(fechaInicio);
+                    fechaCalculada.setDate(fechaInicio.getDate() + diasASumar);
+                    document.getElementById('fechaInicioSemana').value = fechaCalculada.toISOString().split('T')[0];
+                }
+                
+                const infoDiv = document.getElementById('infoSemana');
+                const esExamen = semanaNumero > horarioData.semanas_totales - horarioData.semanas_examenes;
+                infoDiv.innerHTML = `
+                    <strong>Información:</strong><br>
+                    • ${esExamen ? 'Semana de exámenes' : 'Semana de clases'}<br>
+                    • ${esExamen ? 'No se pueden asignar clases' : 'Se pueden asignar clases'}<br>
+                    • Los viernes están bloqueados para asignaciones
+                `;
+                
+            } catch (error) {
+                console.error('Error:', error);
+            }
+        }
+        
+        // Guardar fecha semana
+        async function guardarFechaSemana() {
+            const semanaNumero = document.getElementById('semanaSeleccionada').value;
+            const fechaInicio = document.getElementById('fechaInicioSemana').value;
+            
+            if (!semanaNumero || !fechaInicio) {
+                mostrarNotificacion('error', '❌ Complete todos los campos');
+                return;
+            }
+            
+            try {
+                const response = await fetch(`/api/horarios/${horarioId}/actualizar-fecha-semana`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        semana_numero: parseInt(semanaNumero),
+                        fecha_inicio: fechaInicio
+                    })
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    mostrarNotificacion('success', result.message);
+                    bootstrap.Modal.getInstance(document.getElementById('modalFechaSemana')).hide();
+                    
+                    // Recargar datos completos del horario
+                    await cargarHorario();
+                    
+                    // Forzar recarga de la semana actual si es la editada
+                    if (semanaActual == semanaNumero) {
+                        cargarSemana(semanaActual);
+                    }
+                    
+                    setTimeout(() => {
+                        mostrarNotificacion('info', '📅 Fechas actualizadas. Las asignaturas mantienen su posición.');
+                    }, 500);
+                    
+                } else {
+                    mostrarNotificacion('error', result.error || '❌ Error al guardar');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                mostrarNotificacion('error', '❌ Error de conexión');
+            }
+        }
+        
+        // Mostrar notificación
+        function mostrarNotificacion(tipo, mensaje) {
+            const alert = document.createElement('div');
+            alert.className = `alert alert-${tipo} alert-dismissible fade show notificacion`;
+            alert.setAttribute('role', 'alert');
+            alert.innerHTML = `
+                ${mensaje}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            `;
+            
+            document.querySelectorAll('.notificacion').forEach(el => el.remove());
+            document.body.appendChild(alert);
+            
+            setTimeout(() => {
+                if (alert.parentNode) {
+                    new bootstrap.Alert(alert).close();
+                }
+            }, 3000);
+        }
+    </script>
+</body>
+</html>

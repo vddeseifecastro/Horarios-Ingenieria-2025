@@ -1,0 +1,898 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestión de Asignaturas - Sistema de Horarios</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #4361ee;
+            --primary-dark: #3a0ca3;
+            --secondary: #7209b7;
+            --accent: #00ffff;
+            --dark: #0a0e17;
+            --darker: #050811;
+            --light: #f8f9fa;
+            --text-light: #ffffff;
+            --text-gray: #8892b0;
+            --success: #4cc9f0;
+            --warning: #f8961e;
+            --danger: #f72585;
+        }
+        
+        body {
+            background: linear-gradient(135deg, var(--dark) 0%, var(--darker) 100%);
+            color: var(--text-light);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            min-height: 100vh;
+        }
+        
+        /* Navbar con efecto glassmorphism */
+        .navbar-custom {
+            background: rgba(26, 26, 46, 0.95);
+            -webkit-backdrop-filter: blur(10px);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 1rem 0;
+        }
+        
+        .navbar-brand {
+            color: var(--accent) !important;
+            font-weight: 600;
+            font-size: 1.5rem;
+        }
+        
+        .navbar-custom .nav-link {
+            color: var(--text-gray) !important;
+            transition: all 0.3s ease;
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+            margin: 0 2px;
+        }
+        
+        .navbar-custom .nav-link:hover,
+        .navbar-custom .nav-link:focus {
+            color: var(--accent) !important;
+            background: rgba(67, 97, 238, 0.15);
+        }
+        
+        .nav-link.active {
+            color: var(--accent) !important;
+            background: rgba(67, 97, 238, 0.15);
+            font-weight: 600;
+        }
+        
+        /* Botón de salida */
+        .btn-logout {
+            background: rgba(247, 37, 133, 0.2);
+            border: 1px solid var(--danger);
+            color: var(--danger);
+            transition: all 0.3s ease;
+            border-radius: 8px;
+            padding: 8px 20px;
+        }
+        
+        .btn-logout:hover {
+            background: var(--danger);
+            color: white;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(247, 37, 133, 0.3);
+        }
+        
+        /* Tarjetas principales */
+        .card-custom {
+            background: rgba(255, 255, 255, 0.05);
+            -webkit-backdrop-filter: blur(10px);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            margin-bottom: 20px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        
+        .card-custom:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.3);
+        }
+        
+        /* Botón principal */
+        .btn-primary-custom {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+            border: none;
+            padding: 12px 25px;
+            border-radius: 10px;
+            color: white;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .btn-primary-custom::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+            transition: left 0.7s;
+        }
+        
+        .btn-primary-custom:hover::before {
+            left: 100%;
+        }
+        
+        .btn-primary-custom:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 25px rgba(67, 97, 238, 0.4);
+        }
+        
+        /* Tabla mejorada */
+        .table-custom {
+            background: transparent;
+            border-radius: 10px;
+            overflow: hidden;
+            color: var(--text-light);
+            margin: 0;
+        }
+        
+        .table-custom thead {
+            background: rgba(67, 97, 238, 0.25);
+        }
+        
+        .table-custom th {
+            border: none;
+            padding: 15px;
+            font-weight: 600;
+            color: var(--accent);
+            border-bottom: 2px solid rgba(67, 97, 238, 0.3);
+        }
+        
+        .table-custom td {
+            border: none;
+            padding: 15px;
+            background: rgba(255, 255, 255, 0.03);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        }
+        
+        .table-custom tbody tr {
+            transition: all 0.3s ease;
+        }
+        
+        .table-custom tbody tr:hover {
+            background: rgba(67, 97, 238, 0.1);
+            transform: translateX(5px);
+        }
+        
+        /* Badge de color */
+        .color-badge {
+            width: 25px;
+            height: 25px;
+            border-radius: 6px;
+            display: inline-block;
+            margin-right: 10px;
+            vertical-align: middle;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
+        }
+        
+        /* Modal futurista */
+        .modal-content {
+            background: rgba(10, 14, 23, 0.95);
+            -webkit-backdrop-filter: blur(20px);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.5);
+        }
+        
+        .modal-header {
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+            color: white;
+            border-radius: 15px 15px 0 0;
+            padding: 1.5rem;
+        }
+        
+        .modal-title {
+            font-weight: 600;
+            color: white;
+        }
+        
+        .btn-close-white {
+            filter: invert(1) grayscale(100%) brightness(200%);
+            opacity: 0.8;
+        }
+        
+        .btn-close-white:hover {
+            opacity: 1;
+        }
+        
+        /* Formularios */
+        .form-control-custom {
+            background: rgba(255, 255, 255, 0.07);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: var(--text-light);
+            border-radius: 10px;
+            padding: 12px 15px;
+            transition: all 0.3s ease;
+        }
+        
+        .form-control-custom:focus {
+            background: rgba(255, 255, 255, 0.1);
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(67, 97, 238, 0.25);
+            color: var(--text-light);
+        }
+        
+        .form-label {
+            color: var(--text-gray);
+            font-weight: 500;
+            margin-bottom: 8px;
+        }
+        
+        /* Botones de acción */
+        .btn-outline-primary {
+            border-color: var(--primary);
+            color: var(--primary);
+            transition: all 0.3s ease;
+            border-radius: 8px;
+        }
+        
+        .btn-outline-primary:hover {
+            background: var(--primary);
+            border-color: var(--primary);
+            color: white;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(67, 97, 238, 0.3);
+        }
+        
+        .btn-outline-danger {
+            border-color: var(--danger);
+            color: var(--danger);
+            transition: all 0.3s ease;
+            border-radius: 8px;
+        }
+        
+        .btn-outline-danger:hover {
+            background: var(--danger);
+            border-color: var(--danger);
+            color: white;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(247, 37, 133, 0.3);
+        }
+        
+        /* Badges personalizados */
+        .badge-year {
+            background: rgba(67, 97, 238, 0.25);
+            color: var(--accent);
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            border: 1px solid rgba(67, 97, 238, 0.3);
+            display: inline-block;
+            white-space: nowrap;
+        }
+        
+        /* Columna Año: ancho fijo para que no se aplaste con nombres largos */
+        #tablaAsignaturas td:nth-child(3),
+        .table-custom thead th:nth-child(3) {
+            width: 90px;
+            min-width: 90px;
+            text-align: center;
+        }
+
+        #tablaAsignaturas td:nth-child(4),
+        .table-custom thead th:nth-child(4) {
+            width: 110px;
+            min-width: 110px;
+            text-align: center;
+        }
+        
+        
+        .badge-semester {
+            background: rgba(114, 9, 183, 0.25);
+            color: #c792ea;
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            border: 1px solid rgba(114, 9, 183, 0.3);
+            display: inline-block;
+            white-space: nowrap;
+        }
+        
+        .badge-profesor {
+            background: rgba(76, 201, 240, 0.25);
+            color: var(--success);
+            padding: 5px 10px;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            border: 1px solid rgba(76, 201, 240, 0.3);
+        }
+        
+        /* Textos y espaciado */
+        .text-muted {
+            color: var(--text-gray) !important;
+        }
+        
+        h1, h2, h3, h4, h5, h6 {
+            color: var(--text-light);
+            font-weight: 600;
+        }
+        
+        h1 i {
+            color: var(--accent);
+        }
+        
+        /* Spinner */
+        .spinner-border.text-primary {
+            color: var(--primary) !important;
+        }
+        
+        /* Animaciones */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .fade-in {
+            animation: fadeIn 0.5s ease forwards;
+        }
+        
+        /* Input de color personalizado */
+        input[type="color"] {
+            width: 60px;
+            height: 40px;
+            border-radius: 8px;
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            cursor: pointer;
+            padding: 0;
+        }
+        
+        input[type="color"]:hover {
+            border-color: var(--primary);
+            transform: scale(1.05);
+        }
+        
+        /* Responsive */
+        @media (max-width: 768px) {
+            .table-responsive {
+                border-radius: 10px;
+            }
+            
+            .table-custom {
+                font-size: 0.9rem;
+            }
+            
+            .table-custom th,
+            .table-custom td {
+                padding: 10px 8px;
+            }
+            
+            .nav-link {
+                padding: 0.5rem;
+                margin: 2px;
+            }
+            
+            .btn-primary-custom {
+                padding: 10px 15px;
+                font-size: 0.9rem;
+            }
+        }
+        
+        /* Scrollbar personalizado */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        
+        ::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 10px;
+        }
+        
+        ::-webkit-scrollbar-thumb {
+            background: var(--primary);
+            border-radius: 10px;
+        }
+        
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--primary-dark);
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-custom">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="/dashboard">
+                <i class="fas fa-brain-circuit me-2"></i> HORARIOS
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="/dashboard">Dashboard</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link active" href="/admin/asignaturas" aria-current="page">Asignaturas</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/admin/profesores">Profesores</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/admin/turnos">Turnos</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/admin/horarios">Horarios</a>
+                    </li>
+                    <li class="nav-item">
+                        <button class="btn btn-logout ms-3" onclick="logout()" title="Cerrar sesión" aria-label="Cerrar sesión">
+                            <i class="fas fa-sign-out-alt"></i> Salir
+                        </button>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+    
+    <div class="container-fluid mt-4">
+        <div class="d-flex justify-content-between align-items-center mb-4 fade-in">
+            <h1><i class="fas fa-book me-2"></i> Gestión de Asignaturas</h1>
+            <button class="btn btn-primary-custom" onclick="mostrarModalNueva()" title="Crear nueva asignatura" aria-label="Crear nueva asignatura">
+                <i class="fas fa-plus me-2"></i> Nueva Asignatura
+            </button>
+        </div>
+        
+        <div class="card card-custom fade-in">
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-custom table-hover">
+                        <thead>
+                            <tr>
+                                <th scope="col">Código</th>
+                                <th scope="col">Nombre</th>
+                                <th scope="col">Año</th>
+                                <th scope="col">Semestre</th>
+                                <th scope="col">Profesor</th>
+                                <th scope="col">Horas Presenciales</th>
+                                <th scope="col">Horas No Presenciales</th>
+                                <th scope="col">Total Horas</th>
+                                <th scope="col">Color</th>
+                                <th scope="col">Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tablaAsignaturas">
+                            <tr id="loading-row">
+                                <td colspan="10" class="text-center">
+                                    <div class="spinner-border text-primary" role="status">
+                                        <span class="visually-hidden">Cargando asignaturas...</span>
+                                    </div>
+                                    <p class="mt-2">Cargando asignaturas...</p>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Modal para crear/editar -->
+    <div class="modal fade" id="modalAsignatura" tabindex="-1" aria-labelledby="modalAsignaturaLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="modalTitulo">Nueva Asignatura</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="formAsignatura">
+                        <input type="hidden" id="asignaturaId">
+                        
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label for="codigo" class="form-label">Código *</label>
+                                <input type="text" class="form-control form-control-custom" id="codigo" required 
+                                       title="Código único de la asignatura" 
+                                       aria-label="Código de la asignatura"
+                                       placeholder="Ej: IP, FI, M1">
+                            </div>
+                            <div class="col-md-6">
+                                <label for="nombre" class="form-label">Nombre *</label>
+                                <input type="text" class="form-control form-control-custom" id="nombre" required 
+                                       title="Nombre completo de la asignatura"
+                                       aria-label="Nombre de la asignatura"
+                                       placeholder="Ej: Introducción a la Programación">
+                            </div>
+                        </div>
+                        
+                        <div class="row mb-3">
+                            <div class="col-md-4">
+                                <label for="año_academico" class="form-label">Año Académico *</label>
+                                <select class="form-select form-control-custom" id="año_academico" required 
+                                        title="Año académico en que se imparte la asignatura"
+                                        aria-label="Año académico">
+                                    <option value="">Seleccione un año</option>
+                                    <option value="1">1er Año</option>
+                                    <option value="2">2do Año</option>
+                                    <option value="3">3er Año</option>
+                                    <option value="4">4to Año</option>
+                                </select>
+                            </div>
+                            <div class="col-md-4">
+                                <label for="periodo" class="form-label">Semestre *</label>
+                                <select class="form-select form-control-custom" id="periodo" required 
+                                        title="Semestre en que se imparte la asignatura"
+                                        aria-label="Semestre">
+                                    <option value="">Seleccione un semestre</option>
+                                    <option value="1">Semestre 1</option>
+                                    <option value="2">Semestre 2</option>
+                                </select>
+                            </div>
+                            <div class="col-md-4">
+                                <label for="profesor_id" class="form-label">Profesor</label>
+                                <select class="form-select form-control-custom" id="profesor_id"
+                                        title="Profesor que imparte la asignatura"
+                                        aria-label="Profesor">
+                                    <option value="">Seleccione un profesor</option>
+                                </select>
+                            </div>
+                        </div>
+                        
+                        <div class="row mb-3">
+                            <div class="col-md-4">
+                                <label for="horas_presenciales" class="form-label">Horas Presenciales</label>
+                                <input type="number" class="form-control form-control-custom" id="horas_presenciales" 
+                                       value="0" min="0" 
+                                       title="Cantidad de horas presenciales"
+                                       aria-label="Horas presenciales">
+                            </div>
+                            <div class="col-md-4">
+                                <label for="horas_no_presenciales" class="form-label">Horas No Presenciales</label>
+                                <input type="number" class="form-control form-control-custom" id="horas_no_presenciales" 
+                                       value="0" min="0"
+                                       title="Cantidad de horas no presenciales"
+                                       aria-label="Horas no presenciales">
+                            </div>
+                            <div class="col-md-4">
+                                <label for="color" class="form-label">Color</label>
+                                <input type="color" class="form-control form-control-custom p-1" id="color" 
+                                       value="#3498db"
+                                       title="Color para identificar la asignatura"
+                                       aria-label="Color de la asignatura">
+                            </div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="tipo_evaluacion" class="form-label">Tipo de Evaluación</label>
+                            <select class="form-select form-control-custom" id="tipo_evaluacion"
+                                    title="Tipo de evaluación final de la asignatura"
+                                    aria-label="Tipo de evaluación">
+                                <option value="EF">Examen Final</option>
+                                <option value="TC">Trabajo de Curso</option>
+                                <option value="P">Proyecto</option>
+                                <option value="M">Mixta</option>
+                            </select>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="descripcion" class="form-label">Descripción</label>
+                            <textarea class="form-control form-control-custom" id="descripcion" rows="3"
+                                      title="Descripción detallada de la asignatura"
+                                      aria-label="Descripción de la asignatura"
+                                      placeholder="Describa los contenidos y objetivos de la asignatura..."></textarea>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" title="Cancelar operación" aria-label="Cancelar">Cancelar</button>
+                    <button type="button" class="btn btn-primary-custom" onclick="guardarAsignatura()" title="Guardar asignatura" aria-label="Guardar">Guardar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        let asignaturas = [];
+        let profesores = [];
+        let modalInstance = null;
+        
+        async function cargarProfesores() {
+            try {
+                const response = await fetch('/api/profesores/activos');
+                if (response.ok) {
+                    profesores = await response.json();
+                    actualizarSelectProfesores();
+                }
+            } catch (error) {
+                console.error('Error cargando profesores:', error);
+            }
+        }
+        
+        function actualizarSelectProfesores(profesorSeleccionado = null) {
+            const select = document.getElementById('profesor_id');
+            select.innerHTML = '<option value="">Seleccione un profesor</option>';
+            
+            profesores.forEach(profesor => {
+                const option = document.createElement('option');
+                option.value = profesor.id;
+                option.textContent = `${profesor.codigo} - ${profesor.nombre_completo}`;
+                if (profesorSeleccionado && profesor.id == profesorSeleccionado) {
+                    option.selected = true;
+                }
+                select.appendChild(option);
+            });
+        }
+        
+        async function cargarAsignaturas() {
+            try {
+                const response = await fetch('/api/asignaturas');
+                if (response.ok) {
+                    asignaturas = await response.json();
+                    renderizarTabla();
+                } else {
+                    mostrarError('Error al cargar las asignaturas');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                mostrarError('Error de conexión al servidor');
+            }
+        }
+        
+        function renderizarTabla() {
+            const tbody = document.getElementById('tablaAsignaturas');
+            tbody.innerHTML = '';
+            
+            if (asignaturas.length === 0) {
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="10" class="text-center">
+                            <i class="fas fa-book fa-2x mb-3 text-muted"></i>
+                            <p>No hay asignaturas registradas</p>
+                            <button class="btn btn-primary-custom btn-sm" onclick="mostrarModalNueva()">
+                                <i class="fas fa-plus me-1"></i> Crear primera asignatura
+                            </button>
+                        </td>
+                    </tr>
+                `;
+                return;
+            }
+            
+            asignaturas.forEach(asignatura => {
+                const profesorNombre = asignatura.profesor 
+                    ? `${asignatura.profesor.nombres} ${asignatura.profesor.apellidos}`
+                    : 'No asignado';
+                
+                const profesorBadge = asignatura.profesor_id 
+                    ? `<span class="badge-profesor" title="${profesorNombre}">${asignatura.profesor?.codigo || 'Sin código'}</span>`
+                    : '<span class="text-muted">No asignado</span>';
+                
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td><strong>${asignatura.codigo}</strong></td>
+                    <td>${asignatura.nombre}</td>
+                    <td><span class="badge-year">${asignatura.año_academico}° Año</span></td>
+                    <td><span class="badge-semester">Semestre ${asignatura.periodo}</span></td>
+                    <td>${profesorBadge}</td>
+                    <td>${asignatura.horas_presenciales}</td>
+                    <td>${asignatura.horas_no_presenciales}</td>
+                    <td><strong>${asignatura.horas_totales}</strong></td>
+                    <td>
+                        <span class="color-badge" style="background-color: ${asignatura.color}" title="Color: ${asignatura.color}"></span>
+                        <small class="text-muted">${asignatura.color}</small>
+                    </td>
+                    <td>
+                        <button class="btn btn-sm btn-outline-primary me-2" onclick="editarAsignatura(${asignatura.id})" title="Editar asignatura" aria-label="Editar">
+                            <i class="fas fa-edit"></i>
+                        </button>
+                        <button class="btn btn-sm btn-outline-danger" onclick="eliminarAsignatura(${asignatura.id})" title="Eliminar asignatura" aria-label="Eliminar">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+        
+        function mostrarModalNueva() {
+            document.getElementById('modalTitulo').textContent = 'Nueva Asignatura';
+            document.getElementById('formAsignatura').reset();
+            document.getElementById('asignaturaId').value = '';
+            document.getElementById('color').value = '#4361ee';
+            document.getElementById('horas_presenciales').value = '0';
+            document.getElementById('horas_no_presenciales').value = '0';
+            document.getElementById('tipo_evaluacion').value = 'EF';
+            document.getElementById('año_academico').value = '';
+            document.getElementById('periodo').value = '';
+            document.getElementById('profesor_id').value = '';
+            
+            if (modalInstance) {
+                modalInstance.show();
+            } else {
+                modalInstance = new bootstrap.Modal(document.getElementById('modalAsignatura'));
+                modalInstance.show();
+            }
+        }
+        
+        async function editarAsignatura(id) {
+            console.log(`Editando asignatura ID: ${id}`);
+            
+            try {
+                const response = await fetch(`/api/asignaturas/${id}`);
+                
+                if (!response.ok) {
+                    const error = await response.json();
+                    throw new Error(error.error || `Error ${response.status}`);
+                }
+                
+                const asignatura = await response.json();
+                console.log('Datos recibidos:', asignatura);
+                
+                document.getElementById('modalTitulo').textContent = 'Editar Asignatura';
+                document.getElementById('asignaturaId').value = asignatura.id;
+                document.getElementById('codigo').value = asignatura.codigo || '';
+                document.getElementById('nombre').value = asignatura.nombre || '';
+                document.getElementById('descripcion').value = asignatura.descripcion || '';
+                document.getElementById('año_academico').value = asignatura.año_academico || '1';
+                document.getElementById('periodo').value = asignatura.periodo || '1';
+                document.getElementById('horas_presenciales').value = asignatura.horas_presenciales || 0;
+                document.getElementById('horas_no_presenciales').value = asignatura.horas_no_presenciales || 0;
+                document.getElementById('tipo_evaluacion').value = asignatura.tipo_evaluacion || 'EF';
+                document.getElementById('color').value = asignatura.color || '#4361ee';
+                document.getElementById('profesor_id').value = asignatura.profesor_id || '';
+                
+                actualizarSelectProfesores(asignatura.profesor_id);
+                
+                if (!modalInstance) {
+                    modalInstance = new bootstrap.Modal(document.getElementById('modalAsignatura'));
+                }
+                modalInstance.show();
+                
+            } catch (error) {
+                console.error('Error al cargar la asignatura:', error);
+                alert(`Error al cargar la asignatura: ${error.message}`);
+            }
+        }
+        
+        async function guardarAsignatura() {
+            const id = document.getElementById('asignaturaId').value;
+            const method = id ? 'PUT' : 'POST';
+            const url = id ? `/api/asignaturas/${id}` : '/api/asignaturas';
+            
+            // Validación básica
+            const codigo = document.getElementById('codigo').value.trim();
+            const nombre = document.getElementById('nombre').value.trim();
+            const año_academico = document.getElementById('año_academico').value;
+            const periodo = document.getElementById('periodo').value;
+            const profesor_id = document.getElementById('profesor_id').value;
+            
+            if (!codigo || !nombre || !año_academico || !periodo) {
+                alert('Error: Código, nombre, año y semestre son campos obligatorios');
+                return;
+            }
+            
+            const data = {
+                codigo: codigo,
+                nombre: nombre,
+                descripcion: document.getElementById('descripcion').value.trim(),
+                año_academico: parseInt(año_academico),
+                periodo: parseInt(periodo),
+                horas_presenciales: parseInt(document.getElementById('horas_presenciales').value) || 0,
+                horas_no_presenciales: parseInt(document.getElementById('horas_no_presenciales').value) || 0,
+                tipo_evaluacion: document.getElementById('tipo_evaluacion').value,
+                color: document.getElementById('color').value,
+                profesor_id: profesor_id || null
+            };
+            
+            console.log(`Enviando datos (${method}):`, data);
+            
+            try {
+                const response = await fetch(url, {
+                    method: method,
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(data)
+                });
+                
+                const result = await response.json();
+                console.log('Respuesta del servidor:', result);
+                
+                if (response.ok) {
+                    // Cerrar modal y recargar
+                    if (modalInstance) {
+                        modalInstance.hide();
+                    }
+                    await cargarAsignaturas();
+                    alert(result.message || 'Asignatura guardada exitosamente');
+                } else {
+                    alert(`Error: ${result.error || 'Error desconocido'}`);
+                }
+            } catch (error) {
+                console.error('Error de conexión:', error);
+                alert('Error de conexión al servidor. Verifica que el servidor esté ejecutándose.');
+            }
+        }
+        
+        async function eliminarAsignatura(id) {
+            if (!confirm('¿Está seguro de eliminar esta asignatura?\nEsta acción no se puede deshacer.')) return;
+            
+            try {
+                const response = await fetch(`/api/asignaturas/${id}`, {
+                    method: 'DELETE'
+                });
+                
+                const result = await response.json();
+                
+                if (response.ok) {
+                    await cargarAsignaturas();
+                    mostrarExito('Asignatura eliminada exitosamente');
+                } else {
+                    mostrarError(`Error: ${result.error || 'Error al eliminar'}`);
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                mostrarError('Error de conexión al servidor');
+            }
+        }
+        
+        async function logout() {
+            try {
+                const response = await fetch('/logout');
+                const data = await response.json();
+                
+                if (data.success) {
+                    window.location.href = '/';
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                mostrarError('Error al cerrar sesión');
+            }
+        }
+        
+        function mostrarError(mensaje) {
+            alert('Error: ' + mensaje);
+        }
+        
+        function mostrarExito(mensaje) {
+            alert('Éxito: ' + mensaje);
+        }
+        
+        // Inicializar
+        document.addEventListener('DOMContentLoaded', function() {
+            cargarAsignaturas();
+            cargarProfesores();
+            
+            // Configurar Bootstrap modal
+            const modalElement = document.getElementById('modalAsignatura');
+            modalElement.addEventListener('hidden.bs.modal', function () {
+                document.getElementById('formAsignatura').reset();
+                actualizarSelectProfesores();
+            });
+            
+            // Prevenir envío del formulario con Enter
+            document.getElementById('formAsignatura').addEventListener('keydown', function(e) {
+                if (e.key === 'Enter' && e.target.type !== 'textarea') {
+                    e.preventDefault();
+                }
+            });
+            
+            // Efecto de aparición gradual
+            setTimeout(() => {
+                document.body.style.opacity = '1';
+                document.body.style.transition = 'opacity 0.5s ease';
+            }, 100);
+        });
+    </script>
+</body>
+</html>
